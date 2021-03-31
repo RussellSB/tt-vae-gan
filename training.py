@@ -120,14 +120,14 @@ for i in pbar:
         kld_A = -0.5 * torch.sum(1 + logvar_A - mu_A.pow(2) - logvar_A.exp())
         mse_A = (recon_mel_A - real_mel_A).pow(2).mean()
         loss_VAE_A = (kld_A + mse_A) * lambda_VAE
-        loss_VAE_A.backward(retain_graph=True)  # retain graph so other losses can update in same graph
-        optim_E.step()
+        #loss_VAE_A.backward(retain_graph=True)  # retain graph so other losses can update in same graph
+        #optim_E.step()
         
         kld_B = -0.5 * torch.sum(1 + logvar_B - mu_B.pow(2) - logvar_B.exp())
         mse_B = (recon_mel_B - real_mel_B).pow(2).mean()
         loss_VAE_B = (kld_B + mse_B) * lambda_VAE
-        loss_VAE_B.backward(retain_graph=True)  # retain graph so other losses can update in same graph
-        optim_E.step()
+        #loss_VAE_B.backward(retain_graph=True)  # retain graph so other losses can update in same graph
+        #optim_E.step()
         
         errVAE = (loss_VAE_A + loss_VAE_B) / 2  # for logging
         
@@ -140,8 +140,9 @@ for i in pbar:
         loss_cycle_BAB = loss_cycle(recon_mel_B, real_mel_B) * lambda_cycle
         
         # Backward pass for generator and update all  generators
-        errG = loss_GAN_A2B + loss_GAN_B2A + loss_cycle_ABA + loss_cycle_BAB
+        errG = loss_GAN_A2B + loss_GAN_B2A + loss_cycle_ABA + loss_cycle_BAB + loss_VAE_A + loss_VAE_B
         errG.backward()
+        optim_E.step()
         optim_G.step()
         
         # =====================================================
