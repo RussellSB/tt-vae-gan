@@ -201,5 +201,5 @@ for i in pbar:
         torch.save(D_B.state_dict(), 'pool/01/D_B.pt')
 
     # Save generated output every epoch
-    save_pickle(fake_A_buffer, 'pool/01/a_fake_epoch_'+i+'.pickle')
-    save_pickle(fake_B_buffer, 'pool/01/b_fake_epoch_'+i+'.pickle')
+    save_pickle(fake_A_buffer, 'pool/01/a_fake_epoch_'+str(i)+'.pickle')
+    save_pickle(fake_B_buffer, 'pool/01/b_fake_epoch_'+str(i)+'.pickle')
