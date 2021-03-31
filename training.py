@@ -178,18 +178,16 @@ for i in pbar:
         pbar.set_postfix(vA=loss_enc_A.item(),vB=loss_enc_B.item(), A2B=loss_dec_A2B.item(), B2A=loss_dec_B2A.item(), 
         ABA=loss_cycle_ABA.item(), BAB=loss_cycle_BAB.item(), disc_A=errDisc_A.item(), disc_B=errDisc_B.item())
         
-    # Update error epoch history    
-    train_hist['enc_A'].append(loss_enc_A.item())
-    train_hist['enc_B'].append(loss_enc_B.item())
-    
-    train_hist['dec_B2A'].append(loss_dec_B2A)
-    train_hist['dec_A2B'].append(loss_dec_A2B)
-    train_hist['dec_ABA'].append(loss_cycle_ABA)
-    train_hist['dec_BAB'].append(loss_cycle_BAB)
-    train_hist['dec'].append(errDec.item())
-    
-    train_hist['disc_A'].append(errDisc_A.item())
-    train_hist['disc_B'].append(errDisc_B.item())    
+    	# Update error history    
+    	train_hist['enc_A'].append(loss_enc_A.item())
+    	train_hist['enc_B'].append(loss_enc_B.item())
+    	train_hist['dec_B2A'].append(loss_dec_B2A)
+    	train_hist['dec_A2B'].append(loss_dec_A2B)
+    	train_hist['dec_ABA'].append(loss_cycle_ABA)
+    	train_hist['dec_BAB'].append(loss_cycle_BAB)
+    	train_hist['dec'].append(errDec.item())
+	train_hist['disc_A'].append(errDisc_A.item())
+	train_hist['disc_B'].append(errDisc_B.item())    
 
     # Saving updated training history and model weights every 10 epochs
     if(i % 10 == 0):
