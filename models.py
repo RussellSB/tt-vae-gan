@@ -76,7 +76,7 @@ class Encoder(nn.Module):
         print('res5', x.size())    
         
         # Bottleneck
-        mu = self.mu7(x)
+        mu = self.mu7(x.view(-1, 1024))
         print('mu7', x.size())  
         logvar = self.logvar7(x)   
         print('logvar7', x.size())  
