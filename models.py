@@ -73,16 +73,11 @@ class Encoder(nn.Module):
         x = self.conv3(x)        
         x = self.conv4(x)     
         x = self.res5(x) 
-        print('res5', x.size(), x.view(-1, 1024).size())   
-
-        x = self.fc6(x.view(-1, 1024)) 
-        print('fc6', x.size()) 
         
         # Bottleneck
+        x = self.fc6(x.view(-1, 1024)) 
         mu = self.mu7(x)
-        print('mu7', x.size())  
         logvar = self.logvar7(x)   
-        print('logvar7', x.size())  
         z = self.reparameterize(mu, logvar)
         return z, mu, logvar
 
@@ -125,19 +120,12 @@ class Generator(nn.Module):
         
     def forward(self, x):
         x = self.fc1(x) 
-        print('fc1', x.size())
         x = self.fc2(x) 
-        print('fc2', x.size(), x.view(-1, 1024, 13, 13).size())
         x = self.res1(x.view(-1, 1024, 13, 13))  
-        print('res1', x.size())
         x = self.conv2(x) 
-        print('conv2', x.size())
         x = self.conv3(x) 
-        print('conv3', x.size())
         x = self.conv4(x) 
-        print('conv4', x.size())
         x = self.conv5(x) 
-        print('cov5', x.size())
         return x
 
 
