@@ -20,7 +20,9 @@ learning_rate = 0.0001
 assert max_duplets % batch_size == 0, 'Max sample pairs must be divisible by batch size!' 
 
 # Regularisation
-lambda_cycle = 10.0
+lambda_cycle = 0.001
+lambda_VAE = 100.0
+lambda_GAN = 10.0
 
 # Loading training data
 melset_7_128 = load_pickle('pool/melset_7_128.pickle')
@@ -117,19 +119,19 @@ for i in pbar:
         # Encoding loss A and B
         kld_A = -0.5 * torch.sum(1 + logvar_A - mu_A.pow(2) - logvar_A.exp())
         mse_A = (recon_mel_A - real_mel_A).pow(2).mean()
-        loss_VAE_A = kld_A + mse_A
+        loss_VAE_A = (kld_A + mse_A) * lambda_VAE
         
         kld_B = -0.5 * torch.sum(1 + logvar_B - mu_B.pow(2) - logvar_B.exp())
         mse_B = (recon_mel_B - real_mel_B).pow(2).mean()
-        loss_VAE_B = kld_B + mse_B
+        loss_VAE_B = (kld_B + mse_B) * lambda_VAE
         
         errVAE = (loss_VAE_A + loss_VAE_B) / 2
         errVAE.backward(retain_graph=True)  # retain graph so other losses can update in same graph
         optim_E.step()
         
         # GAN loss
-        loss_GAN_B2A = loss_adversarial(fake_output_A, real_label)
-        loss_GAN_A2B = loss_adversarial(fake_output_B, real_label)
+        loss_GAN_B2A = loss_adversarial(fake_output_A, real_label) * lambda_GAN
+        loss_GAN_A2B = loss_adversarial(fake_output_B, real_label) * lambda_GAN
         
         # Cyclic loss
         loss_cycle_ABA = loss_cycle(recon_mel_A, real_mel_A) * lambda_cycle
@@ -192,7 +194,8 @@ for i in pbar:
     # Saving updated training history and model weights every 10 epochs
     if(i % 10 == 0):
         save_pickle(train_hist, 'pool/01/train_hist.pickle')
-        torch.save(G.state_dict(), 'pool/01/G.pt')
+        torch.save(G_A2B.state_dict(), 'pool/01/G_A2B.pt')
+        torch.save(G_B2A.state_dict(), 'pool/01/G_B2A.pt')
         torch.save(E.state_dict(), 'pool/01/E.pt')
         torch.save(D_A.state_dict(), 'pool/01/D_A.pt')
         torch.save(D_B.state_dict(), 'pool/01/D_B.pt')
