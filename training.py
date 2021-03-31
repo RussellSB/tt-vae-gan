@@ -126,8 +126,6 @@ for i in pbar:
         loss_VAE_B = (kld_B + mse_B) * lambda_VAE
         
         errVAE = (loss_VAE_A + loss_VAE_B) / 2
-        errVAE.backward(retain_graph=True)  # retain graph so other losses can update in same graph
-        optim_E.step()
         
         # GAN loss
         loss_GAN_B2A = loss_adversarial(fake_output_A, real_label) * lambda_GAN
@@ -138,8 +136,10 @@ for i in pbar:
         loss_cycle_BAB = loss_cycle(recon_mel_B, real_mel_B) * lambda_cycle
         
         # Backward pass and update all  
-        errG = loss_GAN_A2B + loss_GAN_B2A + loss_cycle_ABA + loss_cycle_BAB
+        errG = loss_GAN_A2B + loss_GAN_B2A + loss_cycle_ABA + loss_cycle_BAB + errVAE
+        errVAE.backward(retain_graph=True)  # retain graph so other losses can update in same graph
         errG.backward()
+        optim_E.step()
         optim_G.step()
         
         # =====================================================
