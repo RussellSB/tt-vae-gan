@@ -47,10 +47,13 @@ class Encoder(nn.Module):
             nn.BatchNorm2d(1024),
             nn.LeakyReLU(0.2)) 
                  
-        # Residual blocks with skip connections for bottleneck
+        # Skip connection to bottleneck
         self.res5 = ResidualBlock(1024)
-        self.mu6 = ResidualBlock(1024)
-        self.logvar6 = ResidualBlock(1024)
+
+        # Fully connected bottleneck
+        self.fc6 = nn.Linear(2048, 1024)
+        self.mu7 = ResidualBlock(1024)
+        self.logvar7 = ResidualBlock(1024)
         
         # OLD: Starting with less residual blocks due to memory
         # l.append(ResidualBlock(512, 1024))
@@ -69,11 +72,12 @@ class Encoder(nn.Module):
         x = self.conv2(x)      
         x = self.conv3(x)        
         x = self.conv4(x)     
-        x = self.res5(x)     
+        x = self.res5(x) 
+        print(x.shape())    
         
         # Bottleneck
-        mu = self.mu6(x)
-        logvar = self.logvar6(x)   
+        mu = self.mu7(x)
+        logvar = self.logvar7(x)   
         z = self.reparameterize(mu, logvar)
         return z, mu, logvar
 
