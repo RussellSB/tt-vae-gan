@@ -79,6 +79,7 @@ for i in pbar:
     for j in pbar_sub:
         
         # Loading real samples from each speaker in batches
+        breakpoint()
         real_mel_A = melset_7_128[j : j + batch_size].to(device)
         real_mel_B = melset_4_128[j : j + batch_size].to(device)
         
@@ -197,5 +198,10 @@ for i in pbar:
         torch.save(disc_B.state_dict(), 'pool/01/disc_B.pt')
 
     # Save generated output every epoch
+<<<<<<< HEAD
     save_pickle(fake_A_buffer, 'pool/01/a/a_fake_epoch_'+str(i)+'.pickle')
     save_pickle(fake_B_buffer, 'pool/01/b/b_fake_epoch_'+str(i)+'.pickle')
+=======
+    save_pickle(fake_A_buffer, 'pool/01/a_fake_epoch_'+str(i)+'.pickle')
+    save_pickle(fake_B_buffer, 'pool/01/b_fake_epoch_'+str(i)+'.pickle')
+>>>>>>> 5ba8b536e0c829129ccb3c1248ce7ee568006d36
