@@ -51,9 +51,9 @@ class Encoder(nn.Module):
         self.res5 = ResidualBlock(1024)
 
         # Fully connected bottleneck
-        self.fc6 = nn.Linear(2048, 1024)
-        self.mu7 = ResidualBlock(1024)
-        self.logvar7 = ResidualBlock(1024)
+        self.fc6 = nn.Linear(1024, 512)
+        self.mu7 = nn.Linear(512, 256)
+        self.logvar7 = nn.Linear(512, 256)
         
         # OLD: Starting with less residual blocks due to memory
         # l.append(ResidualBlock(512, 1024))
@@ -73,11 +73,13 @@ class Encoder(nn.Module):
         x = self.conv3(x)        
         x = self.conv4(x)     
         x = self.res5(x) 
-        print(x.size())    
+        print('res5', x.size())    
         
         # Bottleneck
         mu = self.mu7(x)
+        print('mu7', x.size())  
         logvar = self.logvar7(x)   
+        print('logvar7', x.size())  
         z = self.reparameterize(mu, logvar)
         return z, mu, logvar
 
@@ -85,7 +87,12 @@ class Encoder(nn.Module):
 class Generator(nn.Module):
     def __init__(self):
         super(Generator, self).__init__()
+
+        # Bottleneck opening
+        self.fc1 = nn.Linear(256, 512)
+        self.fc2 = nn.Linear(512, 1024)
         
+        # Skip connections
         self.res1 = ResidualBlock(1024)  
         
         # OLD: Starting with less residual blocks due to memory
@@ -114,11 +121,20 @@ class Generator(nn.Module):
             nn.Tanh())  # wrt DCGAN 
         
     def forward(self, x):
+        x = self.fc1(x) 
+        print('fc1', x.size())
+        x = self.fc2(x) 
+        print('fc2', x.size())
         x = self.res1(x)  
+        print('res1', x.size())
         x = self.conv2(x) 
+        print('conv2', x.size())
         x = self.conv3(x) 
+        print('conv3', x.size())
         x = self.conv4(x) 
+        print('conv4', x.size())
         x = self.conv5(x) 
+        print('cov5', x.size())
         return x
 
 
