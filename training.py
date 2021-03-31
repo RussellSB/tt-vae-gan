@@ -120,11 +120,11 @@ for i in pbar:
         recon_mel_A = dec_B2A(latent_fake_B)  
         
         # Encoding loss A and B
-        kld_A = 0 #-0.5 * torch.sum(1 + logvar_A - mu_A.pow(2) - logvar_A.exp())
+        kld_A = -0.5 * torch.sum(1 + logvar_A - mu_A.pow(2) - logvar_A.exp())
         mse_A = (recon_mel_A - real_mel_A).pow(2).mean()
         loss_enc_A = (kld_A + mse_A) * lambda_enc
         
-        kld_B = 0 #-0.5 * torch.sum(1 + logvar_B - mu_B.pow(2) - logvar_B.exp())
+        kld_B = -0.5 * torch.sum(1 + logvar_B - mu_B.pow(2) - logvar_B.exp())
         mse_B = (recon_mel_B - real_mel_B).pow(2).mean()
         loss_enc_B = (kld_B + mse_B) * lambda_enc
         
@@ -137,7 +137,7 @@ for i in pbar:
         loss_cycle_BAB = loss_cycle(recon_mel_B, real_mel_B) * lambda_cycle
         
         # Backward pass for generator and update all  generators
-        errDec = loss_dec_A2B + loss_dec_B2A + loss_cycle_ABA + loss_cycle_BAB#loss_dec_A2B + loss_dec_B2A + loss_cycle_ABA + loss_cycle_BAB + loss_enc_A + loss_enc_B
+        errDec = loss_dec_A2B + loss_dec_B2A + loss_cycle_ABA + loss_cycle_BAB + loss_enc_A + loss_enc_B#loss_dec_A2B + loss_dec_B2A + loss_cycle_ABA + loss_cycle_BAB + loss_enc_A + loss_enc_B
         errDec.backward()
         optim_enc.step()
         optim_dec.step()
