@@ -165,7 +165,7 @@ class Discriminator(nn.Module):
         return x        
 
 # Training control
-max_epochs = 1000
+max_epochs = 100
 max_duplets = 3000
 batch_size = 4
 learning_rate = 0.0001
