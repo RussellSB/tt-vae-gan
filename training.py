@@ -79,9 +79,12 @@ for i in pbar:
     for j in pbar_sub:
         
         # Loading real samples from each speaker in batches
-        breakpoint()
-        real_mel_A = melset_7_128[j : j + batch_size].to(device)
-        real_mel_B = melset_4_128[j : j + batch_size].to(device)
+        #real_mel_A = melset_7_128[j : j + batch_size].to(device)
+        #real_mel_B = melset_4_128[j : j + batch_size].to(device)
+        
+	# Testing that loss can firstly go down with same batch
+        real_mel_A = melset_7_128[0 : batch_size].to(device)
+        real_mel_B = melset_4_128[0 : batch_size].to(device)
         
         # Resizing to model tensors
         real_mel_A = real_mel_A.view(batch_size, 1, 128, 128)
@@ -117,11 +120,11 @@ for i in pbar:
         recon_mel_A = dec_B2A(latent_fake_B)  
         
         # Encoding loss A and B
-        kld_A = -0.5 * torch.sum(1 + logvar_A - mu_A.pow(2) - logvar_A.exp())
-        mse_A = (recon_mel_A - real_mel_A).pow(2).mean()
+        kld_A = 0 #-0.5 * torch.sum(1 + logvar_A - mu_A.pow(2) - logvar_A.exp())
+        kjjjjmse_A = (recon_mel_A - real_mel_A).pow(2).mean()
         loss_enc_A = (kld_A + mse_A) * lambda_enc
         
-        kld_B = -0.5 * torch.sum(1 + logvar_B - mu_B.pow(2) - logvar_B.exp())
+        kld_B = 0 #-0.5 * torch.sum(1 + logvar_B - mu_B.pow(2) - logvar_B.exp())
         mse_B = (recon_mel_B - real_mel_B).pow(2).mean()
         loss_enc_B = (kld_B + mse_B) * lambda_enc
         
