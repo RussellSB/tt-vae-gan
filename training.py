@@ -175,8 +175,8 @@ for i in pbar:
         optim_D_B.step() 
         
         # Update error log
-        pbar.set_postfix(errVAE=errVAE.item(), errG=errG.item(), lossGA2B=loss_GAN_A2B.item(), lossGB2A=loss_GAN_B2A.item(), 
-        lossGABA=loss_cycle_ABA.item(), lossGBAB=loss_cycle_BAB.item(), errD_A=errD_A.item(), errD_B=errD_B.item())
+        pbar.set_postfix(VAE=errVAE.item(), G=errG.item(), GA2B=loss_GAN_A2B.item(), GB2A=loss_GAN_B2A.item(), 
+        GABA=loss_cycle_ABA.item(), GBAB=loss_cycle_BAB.item(), D_A=errD_A.item(), D_B=errD_B.item())
         
     # Update error epoch history    
     train_hist['VAE_A'].append(loss_VAE_A.item())
