@@ -73,10 +73,13 @@ class Encoder(nn.Module):
         x = self.conv3(x)        
         x = self.conv4(x)     
         x = self.res5(x) 
-        print('res5', x.size())    
+        print('res5', x.size(), x.view(-1, 1024).size())   
+
+        x = self.fc6(x.view(-1, 1024)) 
+        print('fc6', x.size()) 
         
         # Bottleneck
-        mu = self.mu7(x.view(-1, 1024))
+        mu = self.mu7(x)
         print('mu7', x.size())  
         logvar = self.logvar7(x)   
         print('logvar7', x.size())  
