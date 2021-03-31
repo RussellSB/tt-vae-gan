@@ -73,7 +73,7 @@ class Encoder(nn.Module):
         x = self.conv3(x)        
         x = self.conv4(x)     
         x = self.res5(x) 
-        print(x.shape())    
+        print(x.size())    
         
         # Bottleneck
         mu = self.mu7(x)
