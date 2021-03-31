@@ -121,7 +121,7 @@ for i in pbar:
         
         # Encoding loss A and B
         kld_A = 0 #-0.5 * torch.sum(1 + logvar_A - mu_A.pow(2) - logvar_A.exp())
-        kjjjjmse_A = (recon_mel_A - real_mel_A).pow(2).mean()
+       	mse_A = (recon_mel_A - real_mel_A).pow(2).mean()
         loss_enc_A = (kld_A + mse_A) * lambda_enc
         
         kld_B = 0 #-0.5 * torch.sum(1 + logvar_B - mu_B.pow(2) - logvar_B.exp())
