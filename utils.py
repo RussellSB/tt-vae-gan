@@ -7,6 +7,8 @@ import torch
 import torch.nn as nn
 import numpy as np
 
+import random
+
 def save_pickle(obj, path):
     with open(path, 'wb') as fp:
         pickle.dump(obj, fp)
