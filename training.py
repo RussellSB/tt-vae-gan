@@ -78,6 +78,7 @@ for i in pbar:
     for j in pbar_sub:
         
         # Loading real samples from each speaker in batches
+        breakpoint()
         real_mel_A = melset_7_128[j : j + batch_size].to(device)
         real_mel_B = melset_4_128[j : j + batch_size].to(device)
         
