@@ -120,14 +120,16 @@ for i in pbar:
         kld_A = -0.5 * torch.sum(1 + logvar_A - mu_A.pow(2) - logvar_A.exp())
         mse_A = (recon_mel_A - real_mel_A).pow(2).mean()
         loss_VAE_A = (kld_A + mse_A) * lambda_VAE
+        loss_VAE_A.backward(retain_graph=True)  # retain graph so other losses can update in same graph
+        optim_E.step()
         
         kld_B = -0.5 * torch.sum(1 + logvar_B - mu_B.pow(2) - logvar_B.exp())
         mse_B = (recon_mel_B - real_mel_B).pow(2).mean()
         loss_VAE_B = (kld_B + mse_B) * lambda_VAE
-        
-        errVAE = (loss_VAE_A + loss_VAE_B) / 2
-        errVAE.backward(retain_graph=True)  # retain graph so other losses can update in same graph
+        loss_VAE_B.backward(retain_graph=True)  # retain graph so other losses can update in same graph
         optim_E.step()
+        
+        errVAE = (loss_VAE_A + loss_VAE_B) / 2  # for logging
         
         # GAN loss
         loss_GAN_B2A = loss_adversarial(fake_output_A, real_label) * lambda_GAN
@@ -175,7 +177,7 @@ for i in pbar:
         optim_D_B.step() 
         
         # Update error log
-        pbar.set_postfix(VAE=errVAE.item(), G=errG.item(), GA2B=loss_GAN_A2B.item(), GB2A=loss_GAN_B2A.item(), 
+        pbar.set_postfix(vA=loss_VAE_A.item(),vB=loss_VAE_B.item(), G=errG.item(), GA2B=loss_GAN_A2B.item(), GB2A=loss_GAN_B2A.item(), 
         GABA=loss_cycle_ABA.item(), GBAB=loss_cycle_BAB.item(), D_A=errD_A.item(), D_B=errD_B.item())
         
     # Update error epoch history    
