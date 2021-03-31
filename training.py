@@ -137,7 +137,7 @@ for i in pbar:
         
         # Backward pass and update all  
         errG = loss_GAN_A2B + loss_GAN_B2A + loss_cycle_ABA + loss_cycle_BAB + errVAE
-        errVAE.backward(retain_graph=True)  # retain graph so other losses can update in same graph
+        #errVAE.backward(retain_graph=True)  # retain graph so other losses can update in same graph
         errG.backward()
         optim_E.step()
         optim_G.step()
