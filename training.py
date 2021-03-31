@@ -174,7 +174,7 @@ for i in pbar:
         
         # Update error log
         pbar.set_postfix(errVAE=errVAE.item(), errG=errG.item(), lossGA2B=loss_GAN_A2B.item(), lossGB2A=loss_GAN_B2A.item(), 
-        lossABA=loss_cycle_ABA.item(), lossBAB=loss_cycle_BAB.item(), errD_A=errD_A.item(), errD_B=errD_B.item())
+        lossGABA=loss_cycle_ABA.item(), lossGBAB=loss_cycle_BAB.item(), errD_A=errD_A.item(), errD_B=errD_B.item())
         
     # Update error epoch history    
     train_hist['VAE_A'].append(loss_VAE_A.item())
