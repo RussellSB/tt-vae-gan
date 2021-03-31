@@ -25,8 +25,8 @@ lambda_enc = 1 #100.0
 lambda_dec = 1 #10.0
 
 # Loading training data
-melset_7_128 = load_pickle('pool/melset_7_128.pickle')
-melset_4_128 = load_pickle('pool/melset_4_128.pickle')
+melset_7_128 = load_pickle('pool/melset_7_128_100.pickle')  # for now loading subset for testing
+melset_4_128 = load_pickle('pool/melset_4_128_100.pickle')  # for now loading subset for testing
 print('Melset A size:', len(melset_7_128), 'Melset B size:', len(melset_4_128))
 
 # Shuffling melspectrograms
@@ -57,7 +57,7 @@ optim_dec = torch.optim.Adam(itertools.chain(dec_A2B.parameters(), dec_B2A.param
 optim_disc_A = torch.optim.Adam(disc_A.parameters(), lr=learning_rate)
 optim_disc_B = torch.optim.Adam(disc_B.parameters(), lr=learning_rate)
 
-loss_adversarial = torch.nn.MSELoss().to(device)  # Initialize criterions
+loss_adversarial = torch.nn.BCELoss().to(device)  # Initialize criterions
 loss_cycle = torch.nn.L1Loss().to(device)
 
 train_hist = {}  # Initialise loss history lists
@@ -121,7 +121,7 @@ for i in pbar:
         
         # Encoding loss A and B
         kld_A = 0 #-0.5 * torch.sum(1 + logvar_A - mu_A.pow(2) - logvar_A.exp())
-       	mse_A = (recon_mel_A - real_mel_A).pow(2).mean()
+        mse_A = (recon_mel_A - real_mel_A).pow(2).mean()
         loss_enc_A = (kld_A + mse_A) * lambda_enc
         
         kld_B = 0 #-0.5 * torch.sum(1 + logvar_B - mu_B.pow(2) - logvar_B.exp())
@@ -137,7 +137,7 @@ for i in pbar:
         loss_cycle_BAB = loss_cycle(recon_mel_B, real_mel_B) * lambda_cycle
         
         # Backward pass for generator and update all  generators
-        errDec = loss_dec_A2B + loss_dec_B2A + loss_cycle_ABA + loss_cycle_BAB + loss_enc_A + loss_enc_B
+        errDec = loss_dec_A2B + loss_dec_B2A #loss_dec_A2B + loss_dec_B2A + loss_cycle_ABA + loss_cycle_BAB + loss_enc_A + loss_enc_B
         errDec.backward()
         optim_enc.step()
         optim_dec.step()
