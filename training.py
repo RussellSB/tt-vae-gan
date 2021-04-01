@@ -79,12 +79,12 @@ for i in pbar:
     for j in pbar_sub:
         
         # Loading real samples from each speaker in batches
-        #real_mel_A = melset_7_128[j : j + batch_size].to(device)
-        #real_mel_B = melset_4_128[j : j + batch_size].to(device)
+        real_mel_A = melset_7_128[j : j + batch_size].to(device)
+        real_mel_B = melset_4_128[j : j + batch_size].to(device)
         
 	# Testing that loss can firstly go down with same batch
-        real_mel_A = melset_7_128[0 : batch_size].to(device)
-        real_mel_B = melset_4_128[0 : batch_size].to(device)
+        #real_mel_A = melset_7_128[0 : batch_size].to(device)
+        #real_mel_B = melset_4_128[0 : batch_size].to(device)
         
         # Resizing to model tensors
         real_mel_A = real_mel_A.view(batch_size, 1, 128, 128)
