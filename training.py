@@ -25,8 +25,8 @@ lambda_enc = 1 #100.0
 lambda_dec = 1 #10.0
 
 # Loading training data
-melset_7_128 = load_pickle('pool/melset_7_128_100.pickle')  # for now loading subset for testing
-melset_4_128 = load_pickle('pool/melset_4_128_100.pickle')  # for now loading subset for testing
+melset_7_128 = load_pickle('pool/melset_7_128.pickle')  # add _100 to test subset
+melset_4_128 = load_pickle('pool/melset_4_128.pickle')  # add _100 to test subset
 print('Melset A size:', len(melset_7_128), 'Melset B size:', len(melset_4_128))
 
 # Shuffling melspectrograms
@@ -191,13 +191,13 @@ for i in pbar:
 
     # Saving updated training history and model weights every 10 epochs
     if(i % 10 == 0):
-        save_pickle(train_hist, 'pool/01/train_hist.pickle')
-        torch.save(dec_A2B.state_dict(), 'pool/01/dec_A2B.pt')
-        torch.save(dec_B2A.state_dict(), 'pool/01/dec_B2A.pt')
-        torch.save(enc.state_dict(), 'pool/01/enc.pt')
-        torch.save(disc_A.state_dict(), 'pool/01/disc_A.pt')
-        torch.save(disc_B.state_dict(), 'pool/01/disc_B.pt')
+        save_pickle(train_hist, 'pool/02/train_hist.pickle')
+        torch.save(dec_A2B.state_dict(), 'pool/02/dec_A2B.pt')
+        torch.save(dec_B2A.state_dict(), 'pool/02/dec_B2A.pt')
+        torch.save(enc.state_dict(), 'pool/02/enc.pt')
+        torch.save(disc_A.state_dict(), 'pool/02/disc_A.pt')
+        torch.save(disc_B.state_dict(), 'pool/02/disc_B.pt')
 
     # Save generated output every epoch
-    save_pickle(fake_A_buffer, 'pool/01/a/a_fake_epoch_'+str(i)+'.pickle')
-    save_pickle(fake_B_buffer, 'pool/01/b/b_fake_epoch_'+str(i)+'.pickle')
+    save_pickle(fake_A_buffer, 'pool/02/a/a_fake_epoch_'+str(i)+'.pickle')
+    save_pickle(fake_B_buffer, 'pool/02/b/b_fake_epoch_'+str(i)+'.pickle')
