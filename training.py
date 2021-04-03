@@ -19,7 +19,7 @@ batch_size = 4
 learning_rate = 0.0001
 assert max_duplets % batch_size == 0, 'Max sample pairs must be divisible by batch size!' 
 
-# Regularisation
+# Loss weighting
 lambda_cycle = 1 #0.001
 lambda_enc = 1 #100.0
 lambda_dec = 1 #10.0
@@ -57,9 +57,6 @@ optim_dec = torch.optim.Adam(itertools.chain(dec_A2B.parameters(), dec_B2A.param
 optim_disc_A = torch.optim.Adam(disc_A.parameters(), lr=learning_rate)
 optim_disc_B = torch.optim.Adam(disc_B.parameters(), lr=learning_rate)
 
-loss_adversarial = torch.nn.BCELoss().to(device)  # Initialize criterions
-loss_cycle = torch.nn.L1Loss().to(device)
-
 train_hist = {}  # Initialise loss history lists
 train_hist['dec_B2A'] = []
 train_hist['dec_ABA'] = []
@@ -71,7 +68,30 @@ train_hist['disc_B'] = []
 train_hist['enc_A'] = []
 train_hist['enc_B'] = []
 
+# Initialize criterions
+criterion_adversarial = torch.nn.BCELoss().to(device)  
+criterion_cycle = torch.nn.L1Loss().to(device)
 
+# Encoder loss function for encoder
+def loss_encoding(logvar, mu, real_mel, recon_mel):
+    kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+    mse = (recon_mel - real_mel).pow(2).mean()
+    return (kld + mse) * lambda_enc
+
+
+# Adversarial loss function for decoder and discriminator seperately
+def loss_adversarial(output, label):
+    return criterion_adversarial(output, label) * lambda_dec
+
+
+# Cyclic loss for reconstruction through opposing encoder
+def loss_cycle(recon_mel, real_mel):
+    return criterion_cycle(recon_mel, real_mel) * lambda_cycle
+
+
+# =====================================================================================================
+#                                       The Training Loop
+# =====================================================================================================
 pbar = tqdm(range(max_epochs), desc='Epochs')  # init epoch pbar
 for i in pbar:
     
@@ -82,7 +102,7 @@ for i in pbar:
         real_mel_A = melset_7_128[j : j + batch_size].to(device)
         real_mel_B = melset_4_128[j : j + batch_size].to(device)
         
-	# Testing that loss can firstly go down with same batch
+	    # Testing that loss can firstly go down with same batch
         #real_mel_A = melset_7_128[0 : batch_size].to(device)
         #real_mel_B = melset_4_128[0 : batch_size].to(device)
         
@@ -120,24 +140,19 @@ for i in pbar:
         recon_mel_A = dec_B2A(latent_fake_B)  
         
         # Encoding loss A and B
-        kld_A = -0.5 * torch.sum(1 + logvar_A - mu_A.pow(2) - logvar_A.exp())
-        mse_A = (recon_mel_A - real_mel_A).pow(2).mean()
-        loss_enc_A = (kld_A + mse_A) * lambda_enc
-        
-        kld_B = -0.5 * torch.sum(1 + logvar_B - mu_B.pow(2) - logvar_B.exp())
-        mse_B = (recon_mel_B - real_mel_B).pow(2).mean()
-        loss_enc_B = (kld_B + mse_B) * lambda_enc
+        loss_enc_A = loss_encoding(logvar_A, mu_A, recon_mel_A, real_mel_A)
+        loss_enc_B = loss_encoding(logvar_B, mu_B, recon_mel_B, real_mel_B)
         
         # Decoder/Generator loss
-        loss_dec_B2A = loss_adversarial(fake_output_A, real_label) * lambda_dec
-        loss_dec_A2B = loss_adversarial(fake_output_B, real_label) * lambda_dec
+        loss_dec_B2A = loss_adversarial(fake_output_A, real_label)
+        loss_dec_A2B = loss_adversarial(fake_output_B, real_label)
         
         # Cyclic loss
-        loss_cycle_ABA = loss_cycle(recon_mel_A, real_mel_A) * lambda_cycle
-        loss_cycle_BAB = loss_cycle(recon_mel_B, real_mel_B) * lambda_cycle
+        loss_cycle_ABA = loss_cycle(recon_mel_A, real_mel_A)
+        loss_cycle_BAB = loss_cycle(recon_mel_B, real_mel_B)
         
         # Backward pass for generator and update all  generators
-        errDec = loss_dec_A2B + loss_dec_B2A + loss_cycle_ABA + loss_cycle_BAB + loss_enc_A + loss_enc_B#loss_dec_A2B + loss_dec_B2A + loss_cycle_ABA + loss_cycle_BAB + loss_enc_A + loss_enc_B
+        errDec = loss_dec_A2B + loss_dec_B2A + loss_cycle_ABA + loss_cycle_BAB + loss_enc_A + loss_enc_B
         errDec.backward()
         optim_enc.step()
         optim_dec.step()
