@@ -1,6 +1,6 @@
 import torch
 device = 'cuda' # torch.device("cuda" if torch.cuda.is_available() else "cpu")
-torch.cuda.set_device(1)
+torch.cuda.set_device(2)
 
 import numpy as np
 from tqdm.auto import tqdm
@@ -70,12 +70,12 @@ train_hist['enc_B'] = []
 
 # Initialize criterions
 criterion_adversarial = torch.nn.BCELoss().to(device)  
-criterion_cycle = torch.nn.L1Loss().to(device)
+# criterion_cycle = torch.nn.L1Loss().to(device)
 
-# Encoder loss function for encoder
-def loss_encoding(logvar, mu, real_mel, recon_mel):
+# Encoder loss function for encoder, tries to retain some degree of information
+def loss_encoding(logvar, mu, fake_mel, real_mel):
     kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
-    mse = (recon_mel - real_mel).pow(2).mean()
+    mse = (fake_mel - real_mel).pow(2).mean()
     return (kld + mse) * lambda_enc
 
 
@@ -84,9 +84,11 @@ def loss_adversarial(output, label):
     return criterion_adversarial(output, label) * lambda_dec
 
 
-# Cyclic loss for reconstruction through opposing encoder
-def loss_cycle(recon_mel, real_mel):
-    return criterion_cycle(recon_mel, real_mel) * lambda_cycle
+# Cyclic loss for reconstruction through opposing encoder, tries not to retain degree of info too closely
+def loss_cycle(logvar, mu, recon_mel, real_mel):
+    kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+    mse = (recon_mel - real_mel).pow(2).mean()
+    return (kld + mse) * lambda_cycle
 
 
 # =====================================================================================================
@@ -140,16 +142,16 @@ for i in pbar:
         recon_mel_A = dec_B2A(latent_fake_B)  
         
         # Encoding loss A and B
-        loss_enc_A = loss_encoding(logvar_A, mu_A, recon_mel_A, real_mel_A)
-        loss_enc_B = loss_encoding(logvar_B, mu_B, recon_mel_B, real_mel_B)
+        loss_enc_A = loss_encoding(logvar_A, mu_A, fake_mel_B, real_mel_A)
+        loss_enc_B = loss_encoding(logvar_B, mu_B, fake_mel_A, real_mel_B)
         
         # Decoder/Generator loss
         loss_dec_B2A = loss_adversarial(fake_output_A, real_label)
         loss_dec_A2B = loss_adversarial(fake_output_B, real_label)
         
         # Cyclic loss
-        loss_cycle_ABA = loss_cycle(recon_mel_A, real_mel_A)
-        loss_cycle_BAB = loss_cycle(recon_mel_B, real_mel_B)
+        loss_cycle_ABA = loss_cycle(logvar_A, mu_A, recon_mel_A, real_mel_A)
+        loss_cycle_BAB = loss_cycle(logvar_B, mu_B, recon_mel_B, real_mel_B)
         
         # Backward pass for generator and update all  generators
         errDec = loss_dec_A2B + loss_dec_B2A + loss_cycle_ABA + loss_cycle_BAB + loss_enc_A + loss_enc_B
@@ -206,13 +208,13 @@ for i in pbar:
 
     # Saving updated training history and model weights every 10 epochs
     if(i % 10 == 0):
-        save_pickle(train_hist, 'pool/02/train_hist.pickle')
-        torch.save(dec_A2B.state_dict(), 'pool/02/dec_A2B.pt')
-        torch.save(dec_B2A.state_dict(), 'pool/02/dec_B2A.pt')
-        torch.save(enc.state_dict(), 'pool/02/enc.pt')
-        torch.save(disc_A.state_dict(), 'pool/02/disc_A.pt')
-        torch.save(disc_B.state_dict(), 'pool/02/disc_B.pt')
+        save_pickle(train_hist, 'pool/03/train_hist.pickle')
+        torch.save(dec_A2B.state_dict(), 'pool/03/dec_A2B.pt')
+        torch.save(dec_B2A.state_dict(), 'pool/03/dec_B2A.pt')
+        torch.save(enc.state_dict(), 'pool/03/enc.pt')
+        torch.save(disc_A.state_dict(), 'pool/03/disc_A.pt')
+        torch.save(disc_B.state_dict(), 'pool/03/disc_B.pt')
 
     # Save generated output every epoch
-    save_pickle(fake_A_buffer, 'pool/02/a/a_fake_epoch_'+str(i)+'.pickle')
-    save_pickle(fake_B_buffer, 'pool/02/b/b_fake_epoch_'+str(i)+'.pickle')
+    save_pickle(fake_A_buffer, 'pool/03/a/a_fake_epoch_'+str(i)+'.pickle')
+    save_pickle(fake_B_buffer, 'pool/03/b/b_fake_epoch_'+str(i)+'.pickle')
