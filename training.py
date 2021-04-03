@@ -1,6 +1,6 @@
 import torch
 device = 'cuda' # torch.device("cuda" if torch.cuda.is_available() else "cpu")
-torch.cuda.set_device(2)
+torch.cuda.set_device(3)
 
 import numpy as np
 from tqdm.auto import tqdm
@@ -23,6 +23,8 @@ assert max_duplets % batch_size == 0, 'Max sample pairs must be divisible by bat
 lambda_cycle = 1 #0.001
 lambda_enc = 1 #100.0
 lambda_dec = 1 #10.0
+lambda_kld = 1 #
+lambda_latent = 1 #10.0
 
 # Loading training data
 melset_7_128 = load_pickle('pool/melset_7_128.pickle')  # add _100 to test subset
@@ -67,10 +69,11 @@ train_hist['disc_A'] = []
 train_hist['disc_B'] = []
 train_hist['enc_A'] = []
 train_hist['enc_B'] = []
+train_hist['latent'] = []
 
 # Initialize criterions
 criterion_adversarial = torch.nn.BCELoss().to(device)  
-# criterion_cycle = torch.nn.L1Loss().to(device)
+criterion_latent = torch.nn.L1Loss().to(device)
 
 # Encoder loss function for encoder, tries to retain some degree of information
 def loss_encoding(logvar, mu, fake_mel, real_mel):
@@ -89,6 +92,11 @@ def loss_cycle(logvar, mu, recon_mel, real_mel):
     kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
     mse = (recon_mel - real_mel).pow(2).mean()
     return (kld + mse) * lambda_cycle
+
+
+# Latent loss, L1 distance between centroids of each speaker's distribution
+def loss_latent(mu_A, mu_B):
+    return criterion_latent(mu_A, mu_B) * lambda_latent
 
 
 # =====================================================================================================
@@ -152,9 +160,12 @@ for i in pbar:
         # Cyclic loss
         loss_cycle_ABA = loss_cycle(logvar_A, mu_A, recon_mel_A, real_mel_A)
         loss_cycle_BAB = loss_cycle(logvar_B, mu_B, recon_mel_B, real_mel_B)
+
+        # Latent loss
+        loss_lat = loss_latent(mu_A, mu_B)
         
         # Backward pass for generator and update all  generators
-        errDec = loss_dec_A2B + loss_dec_B2A + loss_cycle_ABA + loss_cycle_BAB + loss_enc_A + loss_enc_B
+        errDec = loss_dec_A2B + loss_dec_B2A + loss_cycle_ABA + loss_cycle_BAB + loss_enc_A + loss_enc_B + loss_lat
         errDec.backward()
         optim_enc.step()
         optim_dec.step()
@@ -208,13 +219,13 @@ for i in pbar:
 
     # Saving updated training history and model weights every 10 epochs
     if(i % 10 == 0):
-        save_pickle(train_hist, 'pool/03/train_hist.pickle')
-        torch.save(dec_A2B.state_dict(), 'pool/03/dec_A2B.pt')
-        torch.save(dec_B2A.state_dict(), 'pool/03/dec_B2A.pt')
-        torch.save(enc.state_dict(), 'pool/03/enc.pt')
-        torch.save(disc_A.state_dict(), 'pool/03/disc_A.pt')
-        torch.save(disc_B.state_dict(), 'pool/03/disc_B.pt')
+        save_pickle(train_hist, 'pool/04/train_hist.pickle')
+        torch.save(dec_A2B.state_dict(), 'pool/04/dec_A2B.pt')
+        torch.save(dec_B2A.state_dict(), 'pool/04/dec_B2A.pt')
+        torch.save(enc.state_dict(), 'pool/04/enc.pt')
+        torch.save(disc_A.state_dict(), 'pool/04/disc_A.pt')
+        torch.save(disc_B.state_dict(), 'pool/04/disc_B.pt')
 
     # Save generated output every epoch
-    save_pickle(fake_A_buffer, 'pool/03/a/a_fake_epoch_'+str(i)+'.pickle')
-    save_pickle(fake_B_buffer, 'pool/03/b/b_fake_epoch_'+str(i)+'.pickle')
+    save_pickle(fake_A_buffer, 'pool/04/a/a_fake_epoch_'+str(i)+'.pickle')
+    save_pickle(fake_B_buffer, 'pool/04/b/b_fake_epoch_'+str(i)+'.pickle')
