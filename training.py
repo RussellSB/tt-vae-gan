@@ -20,11 +20,11 @@ learning_rate = 0.0001
 assert max_duplets % batch_size == 0, 'Max sample pairs must be divisible by batch size!' 
 
 # Loss weighting
-lambda_cycle = 1 #0.001
-lambda_enc = 1 #100.0
-lambda_dec = 1 #10.0
-lambda_kld = 1 #
-lambda_latent = 1 #10.0
+lambda_cycle = 100.0
+lambda_enc = 100.0
+lambda_dec = 10.0
+lambda_kld = 0.001
+lambda_latent = 10.0
 
 # Loading training data
 melset_7_128 = load_pickle('pool/melset_7_128.pickle')  # add _100 to test subset
@@ -79,7 +79,7 @@ criterion_latent = torch.nn.L1Loss().to(device)
 def loss_encoding(logvar, mu, fake_mel, real_mel):
     kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
     mse = (fake_mel - real_mel).pow(2).mean()
-    return (kld + mse) * lambda_enc
+    return ((kld * lambda_kld) + mse) * lambda_enc
 
 
 # Adversarial loss function for decoder and discriminator seperately
@@ -91,7 +91,7 @@ def loss_adversarial(output, label):
 def loss_cycle(logvar, mu, recon_mel, real_mel):
     kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
     mse = (recon_mel - real_mel).pow(2).mean()
-    return (kld + mse) * lambda_cycle
+    return ((kld * lambda_kld) + mse) * lambda_cycle
 
 
 # Latent loss, L1 distance between centroids of each speaker's distribution
