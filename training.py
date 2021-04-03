@@ -69,7 +69,7 @@ train_hist['disc_A'] = []
 train_hist['disc_B'] = []
 train_hist['enc_A'] = []
 train_hist['enc_B'] = []
-train_hist['latent'] = []
+train_hist['enc_lat'] = []
 
 # Initialize criterions
 criterion_adversarial = torch.nn.BCELoss().to(device)  
