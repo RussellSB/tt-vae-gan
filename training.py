@@ -1,6 +1,6 @@
 import torch
 device = 'cuda' # torch.device("cuda" if torch.cuda.is_available() else "cpu")
-torch.cuda.set_device(3)
+torch.cuda.set_device(2)
 
 import numpy as np
 from tqdm.auto import tqdm
@@ -222,12 +222,12 @@ for i in pbar:
 
     # Saving updated training history and model weights every 10 epochs
     if(i % 10 == 0):
-        save_pickle(train_hist, 'poo/'+n+'train_hist.pickle')
-        torch.save(dec_A2B.state_dict(), 'poo/'+n+'dec_A2B.pt')
-        torch.save(dec_B2A.state_dict(), 'poo/'+n+'dec_B2A.pt')
-        torch.save(enc.state_dict(), 'poo/'+n+'enc.pt')
-        torch.save(disc_A.state_dict(), 'poo/'+n+'disc_A.pt')
-        torch.save(disc_B.state_dict(), 'poo/'+n+'/disc_B.pt')
+        save_pickle(train_hist, 'pool/'+n+'train_hist.pickle')
+        torch.save(dec_A2B.state_dict(), 'pool/'+n+'dec_A2B.pt')
+        torch.save(dec_B2A.state_dict(), 'pool/'+n+'dec_B2A.pt')
+        torch.save(enc.state_dict(), 'pool/'+n+'enc.pt')
+        torch.save(disc_A.state_dict(), 'pool/'+n+'disc_A.pt')
+        torch.save(disc_B.state_dict(), 'pool/'+n+'/disc_B.pt')
 
     # Save generated output every epoch
     save_pickle(fake_A_buffer, 'pool/'+n+'/a/a_fake_epoch_'+str(i)+'.pickle')

@@ -127,7 +127,7 @@ class Generator(nn.Module):
         x = self.fc2(x) 
         x = self.res1(x.view(-1, 1024, 13, 13))  
         x = self.res1_2(x)
-	x = self.conv2(x) 
+        x = self.conv2(x) 
         x = self.conv3(x) 
         x = self.conv4(x) 
         x = self.conv5(x) 
