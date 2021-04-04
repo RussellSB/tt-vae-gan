@@ -49,7 +49,7 @@ class Encoder(nn.Module):
                  
         # Skip connection to bottleneck
         self.res5 = ResidualBlock(1024)
-	self.res5_2 = ResidualBlock(1024)
+        self.res5_2 = ResidualBlock(1024)
 
 
         # Fully connected bottleneck
