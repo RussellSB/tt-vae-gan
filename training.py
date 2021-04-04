@@ -12,6 +12,8 @@ from models import ResidualBlock, Encoder, Generator, Discriminator
 from matplotlib import pyplot as plt
 import librosa
 
+n = '06'
+
 # Hyperparameters
 max_epochs = 100
 max_duplets = 1680
@@ -220,13 +222,13 @@ for i in pbar:
 
     # Saving updated training history and model weights every 10 epochs
     if(i % 10 == 0):
-        save_pickle(train_hist, 'pool/05/train_hist.pickle')
-        torch.save(dec_A2B.state_dict(), 'pool/05/dec_A2B.pt')
-        torch.save(dec_B2A.state_dict(), 'pool/05/dec_B2A.pt')
-        torch.save(enc.state_dict(), 'pool/05/enc.pt')
-        torch.save(disc_A.state_dict(), 'pool/05/disc_A.pt')
-        torch.save(disc_B.state_dict(), 'pool/05/disc_B.pt')
+        save_pickle(train_hist, 'poo/'+n+'train_hist.pickle')
+        torch.save(dec_A2B.state_dict(), 'poo/'+n+'dec_A2B.pt')
+        torch.save(dec_B2A.state_dict(), 'poo/'+n+'dec_B2A.pt')
+        torch.save(enc.state_dict(), 'poo/'+n+'enc.pt')
+        torch.save(disc_A.state_dict(), 'poo/'+n+'disc_A.pt')
+        torch.save(disc_B.state_dict(), 'poo/'+n+'/disc_B.pt')
 
     # Save generated output every epoch
-    save_pickle(fake_A_buffer, 'pool/05/a/a_fake_epoch_'+str(i)+'.pickle')
-    save_pickle(fake_B_buffer, 'pool/05/b/b_fake_epoch_'+str(i)+'.pickle')
+    save_pickle(fake_A_buffer, 'pool/'+n+'/a/a_fake_epoch_'+str(i)+'.pickle')
+    save_pickle(fake_B_buffer, 'pool/'+n+'/b/b_fake_epoch_'+str(i)+'.pickle')
