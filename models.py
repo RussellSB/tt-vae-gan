@@ -75,7 +75,7 @@ class Encoder(nn.Module):
         x = self.conv3(x)        
         x = self.conv4(x)     
         x = self.res5(x)
-	x = self.res5_2(x) 
+        x = self.res5_2(x) 
         
         # Bottleneck
         x = self.fc6(x.view(-1, 1024)) 
