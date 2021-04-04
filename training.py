@@ -1,6 +1,6 @@
 import torch
 device = 'cuda' # torch.device("cuda" if torch.cuda.is_available() else "cpu")
-torch.cuda.set_device(0)
+torch.cuda.set_device(3)
 
 import numpy as np
 from tqdm.auto import tqdm
@@ -12,7 +12,7 @@ from models import ResidualBlock, Encoder, Generator, Discriminator
 from matplotlib import pyplot as plt
 import librosa
 
-n = '06'
+n = '07'
 
 # Hyperparameters
 max_epochs = 100
