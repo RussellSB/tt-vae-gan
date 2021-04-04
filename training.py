@@ -14,21 +14,21 @@ import librosa
 
 # Hyperparameters
 max_epochs = 100
-max_duplets = 3000
+max_duplets = 1680
 batch_size = 4
 learning_rate = 0.0001
 assert max_duplets % batch_size == 0, 'Max sample pairs must be divisible by batch size!' 
 
 # Loss weighting
-lambda_cycle = 100.0
-lambda_enc = 100.0
-lambda_dec = 10.0
-lambda_kld = 0.001
-lambda_latent = 10.0
+lambda_cycle = 1 # 100.0
+lambda_enc = 1 # 100.0
+lambda_dec = 1 # 10.0
+lambda_kld = 1 # 0.001
+lambda_latent = 1 # 10.0
 
 # Loading training data
-melset_7_128 = load_pickle('pool/melset_7_128.pickle')  # add _100 to test subset
-melset_4_128 = load_pickle('pool/melset_4_128.pickle')  # add _100 to test subset
+melset_7_128 = load_pickle('pool/melset_7_128_cont.pickle')  # add _100 to test old subset
+melset_4_128 = load_pickle('pool/melset_4_128_cont.pickle')  # add _100 to test old subset
 print('Melset A size:', len(melset_7_128), 'Melset B size:', len(melset_4_128))
 
 # Shuffling melspectrograms
