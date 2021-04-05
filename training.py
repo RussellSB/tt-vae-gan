@@ -1,6 +1,6 @@
 import torch
 device = 'cuda' # torch.device("cuda" if torch.cuda.is_available() else "cpu")
-torch.cuda.set_device(2)
+torch.cuda.set_device(3)
 
 import numpy as np
 from tqdm.auto import tqdm
@@ -12,7 +12,7 @@ from models import ResidualBlock, Encoder, Generator, Discriminator
 from matplotlib import pyplot as plt
 import librosa
 
-n = '07'
+n = '08'
 
 # Hyperparameters
 max_epochs = 100
@@ -22,11 +22,11 @@ learning_rate = 0.0001
 assert max_duplets % batch_size == 0, 'Max sample pairs must be divisible by batch size!' 
 
 # Loss weighting
-lambda_cycle = 1 # 100.0
-lambda_enc = 1 # 100.0
-lambda_dec = 1 # 10.0
-lambda_kld = 1 # 0.001
-lambda_latent = 1 # 10.0
+lambda_cycle = 100.0
+lambda_enc = 100.0
+lambda_dec = 10.0
+lambda_kld = 0.001
+lambda_latent = 10.0
 
 # Loading training data
 melset_7_128 = load_pickle('pool/melset_7_128_cont.pickle')  # add _100 to test old subset
@@ -222,11 +222,11 @@ for i in pbar:
 
     # Saving updated training history and model weights every 10 epochs
     if(i % 10 == 0):
-        save_pickle(train_hist, 'pool/'+n+'train_hist.pickle')
-        torch.save(dec_A2B.state_dict(), 'pool/'+n+'dec_A2B.pt')
-        torch.save(dec_B2A.state_dict(), 'pool/'+n+'dec_B2A.pt')
-        torch.save(enc.state_dict(), 'pool/'+n+'enc.pt')
-        torch.save(disc_A.state_dict(), 'pool/'+n+'disc_A.pt')
+        save_pickle(train_hist, 'pool/'+n+'/train_hist.pickle')
+        torch.save(dec_A2B.state_dict(), 'pool/'+n+'/dec_A2B.pt')
+        torch.save(dec_B2A.state_dict(), 'pool/'+n+'/dec_B2A.pt')
+        torch.save(enc.state_dict(), 'pool/'+n+'/enc.pt')
+        torch.save(disc_A.state_dict(), 'pool/'+n+'/disc_A.pt')
         torch.save(disc_B.state_dict(), 'pool/'+n+'/disc_B.pt')
 
     # Save generated output every epoch
