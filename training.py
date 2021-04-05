@@ -1,6 +1,6 @@
 import torch
 device = 'cuda' # torch.device("cuda" if torch.cuda.is_available() else "cpu")
-torch.cuda.set_device(3)
+torch.cuda.set_device(2)
 
 import numpy as np
 from tqdm.auto import tqdm
@@ -12,11 +12,11 @@ from models import ResidualBlock, Encoder, Generator, Discriminator
 from matplotlib import pyplot as plt
 import librosa
 
-n = '08'
+n = '09'
 
 # Hyperparameters
 max_epochs = 100
-max_duplets = 1680
+max_duplets = 5940
 batch_size = 4
 learning_rate = 0.0001
 assert max_duplets % batch_size == 0, 'Max sample pairs must be divisible by batch size!' 
@@ -29,8 +29,8 @@ lambda_kld = 0.001
 lambda_latent = 10.0
 
 # Loading training data
-melset_7_128 = load_pickle('pool/melset_7_128_cont.pickle')  # add _100 to test old subset
-melset_4_128 = load_pickle('pool/melset_4_128_cont.pickle')  # add _100 to test old subset
+melset_7_128 = load_pickle('pool/melset_7_128_cont_p.pickle') 
+melset_4_128 = load_pickle('pool/melset_4_128_cont_p.pickle')
 print('Melset A size:', len(melset_7_128), 'Melset B size:', len(melset_4_128))
 
 # Shuffling melspectrograms
