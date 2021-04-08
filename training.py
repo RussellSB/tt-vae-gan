@@ -1,6 +1,6 @@
 import torch
 device = 'cuda' # torch.device("cuda" if torch.cuda.is_available() else "cpu")
-torch.cuda.set_device(2)
+torch.cuda.set_device(1)
 
 import numpy as np
 from tqdm.auto import tqdm
@@ -12,21 +12,39 @@ from models import ResidualBlock, Encoder, Generator, Discriminator
 from matplotlib import pyplot as plt
 import librosa
 
-n = '09'
+import os
+
+# Prepares result output
+n = '14'
+print('Outputting to pool', n)
+pooldir = 'pool/' + str(n)
+adir = pooldir + '/a'
+bdir = pooldir + '/b'
+
+# If folder doesn't exist make it
+if not os.path.exists(pooldir):
+    os.mkdir(pooldir)
+else:
+    print("Outputing to an existing experiment pool!")
+    
+if not os.path.exists(adir):
+    os.mkdir(adir)
+if not os.path.exists(bdir):
+    os.mkdir(bdir)
 
 # Hyperparameters
 max_epochs = 100
-max_duplets = 5940
+max_duplets = 1680 #5940
 batch_size = 4
 learning_rate = 0.0001
 assert max_duplets % batch_size == 0, 'Max sample pairs must be divisible by batch size!' 
 
 # Loss weighting
-lambda_cycle = 100.0
-lambda_enc = 100.0
-lambda_dec = 10.0
-lambda_kld = 0.001
-lambda_latent = 10.0
+lambda_cycle = 1 #100.0
+lambda_enc = 1 #100.0
+lambda_dec = 1 #10.0
+lambda_kld = 1 #0.001
+lambda_latent = 1 #10.0
 
 # Loading training data
 melset_7_128 = load_pickle('pool/melset_7_128_cont_p.pickle') 
@@ -167,7 +185,7 @@ for i in pbar:
         loss_lat = loss_latent(mu_A, mu_B)
         
         # Backward pass for generator and update all  generators
-        errDec = loss_dec_A2B + loss_dec_B2A + loss_cycle_ABA + loss_cycle_BAB + loss_enc_A + loss_enc_B + loss_lat
+        errDec = loss_dec_A2B + loss_dec_B2A + loss_cycle_ABA + loss_cycle_BAB # loss_enc_B + loss_enc_A + loss_lat 
         errDec.backward()
         optim_enc.step()
         optim_dec.step()
@@ -222,13 +240,13 @@ for i in pbar:
 
     # Saving updated training history and model weights every 10 epochs
     if(i % 10 == 0):
-        save_pickle(train_hist, 'pool/'+n+'/train_hist.pickle')
-        torch.save(dec_A2B.state_dict(), 'pool/'+n+'/dec_A2B.pt')
-        torch.save(dec_B2A.state_dict(), 'pool/'+n+'/dec_B2A.pt')
-        torch.save(enc.state_dict(), 'pool/'+n+'/enc.pt')
-        torch.save(disc_A.state_dict(), 'pool/'+n+'/disc_A.pt')
-        torch.save(disc_B.state_dict(), 'pool/'+n+'/disc_B.pt')
+        save_pickle(train_hist, pooldir +'/train_hist.pickle')
+        torch.save(dec_A2B.state_dict(),  pooldir +'/dec_A2B.pt')
+        torch.save(dec_B2A.state_dict(),  pooldir +'/dec_B2A.pt')
+        torch.save(enc.state_dict(), pooldir +'/enc.pt')
+        torch.save(disc_A.state_dict(),  pooldir +'/disc_A.pt')
+        torch.save(disc_B.state_dict(),  pooldir +'/disc_B.pt')
 
     # Save generated output every epoch
-    save_pickle(fake_A_buffer, 'pool/'+n+'/a/a_fake_epoch_'+str(i)+'.pickle')
-    save_pickle(fake_B_buffer, 'pool/'+n+'/b/b_fake_epoch_'+str(i)+'.pickle')
+    save_pickle(fake_A_buffer, adir +'/a_fake_epoch_'+str(i)+'.pickle')
+    save_pickle(fake_B_buffer, bdir +'/b_fake_epoch_'+str(i)+'.pickle')

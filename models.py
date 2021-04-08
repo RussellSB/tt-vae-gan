@@ -49,7 +49,7 @@ class Encoder(nn.Module):
                  
         # Skip connection to bottleneck
         self.res5 = ResidualBlock(1024)
-        self.res5_2 = ResidualBlock(1024)
+        #self.res5_2 = ResidualBlock(1024)
 
 
         # Fully connected bottleneck
@@ -75,7 +75,7 @@ class Encoder(nn.Module):
         x = self.conv3(x)        
         x = self.conv4(x)     
         x = self.res5(x)
-        x = self.res5_2(x) 
+        #x = self.res5_2(x) 
         
         # Bottleneck
         x = self.fc6(x.view(-1, 1024)) 
@@ -95,7 +95,7 @@ class Generator(nn.Module):
         
         # Skip connections
         self.res1 = ResidualBlock(1024)  
-        self.res1_2 = ResidualBlock(1024)
+        #self.res1_2 = ResidualBlock(1024)
 
         # OLD: Starting with less residual blocks due to memory
         # l.append(ResidualBlock(1156, 1024))
@@ -126,7 +126,7 @@ class Generator(nn.Module):
         x = self.fc1(x) 
         x = self.fc2(x) 
         x = self.res1(x.view(-1, 1024, 13, 13))  
-        x = self.res1_2(x)
+        #x = self.res1_2(x)
         x = self.conv2(x) 
         x = self.conv3(x) 
         x = self.conv4(x) 
