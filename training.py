@@ -1,6 +1,6 @@
 import torch
 device = 'cuda' # torch.device("cuda" if torch.cuda.is_available() else "cpu")
-torch.cuda.set_device(1)
+torch.cuda.set_device(0)
 
 import numpy as np
 from tqdm.auto import tqdm
@@ -15,7 +15,7 @@ import librosa
 import os
 
 # Prepares result output
-n = '14'
+n = '16' # Wasserstenian loss with hyperparamters
 print('Outputting to pool', n)
 pooldir = 'pool/' + str(n)
 adir = pooldir + '/a'
@@ -25,7 +25,7 @@ bdir = pooldir + '/b'
 if not os.path.exists(pooldir):
     os.mkdir(pooldir)
 else:
-    print("Outputing to an existing experiment pool!")
+    print("Warning: Outputing to an existing experiment pool!", n)
     
 if not os.path.exists(adir):
     os.mkdir(adir)
@@ -37,11 +37,12 @@ max_epochs = 100
 max_duplets = 1680 #5940
 batch_size = 4
 learning_rate = 0.0001
+clip_value = 0.01 # lower and upper clip value for discriminator weights
 assert max_duplets % batch_size == 0, 'Max sample pairs must be divisible by batch size!' 
 
 # Loss weighting
-lambda_cycle = 1 #100.0
-lambda_enc = 1 #100.0
+lambda_cycle = 1/100 #100.0
+lambda_enc = 1/100 #100.0
 lambda_dec = 1 #10.0
 lambda_kld = 1 #0.001
 lambda_latent = 1 #10.0
@@ -91,8 +92,11 @@ train_hist['enc_A'] = []
 train_hist['enc_B'] = []
 train_hist['enc_lat'] = []
 
+# =====================================================================================================
+#                                       Loss functions
+# =====================================================================================================
+
 # Initialize criterions
-criterion_adversarial = torch.nn.BCELoss().to(device)  
 criterion_latent = torch.nn.L1Loss().to(device)
 
 # Encoder loss function for encoder, tries to retain some degree of information
@@ -100,11 +104,6 @@ def loss_encoding(logvar, mu, fake_mel, real_mel):
     kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
     mse = (fake_mel - real_mel).pow(2).mean()
     return ((kld * lambda_kld) + mse) * lambda_enc
-
-
-# Adversarial loss function for decoder and discriminator seperately
-def loss_adversarial(output, label):
-    return criterion_adversarial(output, label) * lambda_dec
 
 
 # Cyclic loss for reconstruction through opposing encoder, tries not to retain degree of info too closely
@@ -117,7 +116,6 @@ def loss_cycle(logvar, mu, recon_mel, real_mel):
 # Latent loss, L1 distance between centroids of each speaker's distribution
 def loss_latent(mu_A, mu_B):
     return criterion_latent(mu_A, mu_B) * lambda_latent
-
 
 # =====================================================================================================
 #                                       The Training Loop
@@ -174,8 +172,8 @@ for i in pbar:
         loss_enc_B = loss_encoding(logvar_B, mu_B, fake_mel_A, real_mel_B)
         
         # Decoder/Generator loss
-        loss_dec_B2A = loss_adversarial(fake_output_A, real_label)
-        loss_dec_A2B = loss_adversarial(fake_output_B, real_label)
+        loss_dec_B2A = -torch.mean(fake_output_A)
+        loss_dec_A2B = -torch.mean(fake_output_B)
         
         # Cyclic loss
         loss_cycle_ABA = loss_cycle(logvar_A, mu_A, recon_mel_A, real_mel_A)
@@ -203,18 +201,18 @@ for i in pbar:
         fake_mel_A = fake_A_buffer.push_and_pop(fake_mel_A)
         fake_out_A = torch.squeeze(disc_A(fake_mel_A.detach()))
         
-        loss_D_real_A = loss_adversarial(real_out_A, real_label)
-        loss_D_fake_A = loss_adversarial(fake_out_A, fake_label)
-        errDisc_A = (loss_D_real_A + loss_D_fake_A) / 2
+        loss_D_real_A = -torch.mean(real_out_A)
+        loss_D_fake_A = torch.mean(fake_out_A)
+        errDisc_A = loss_D_real_A + loss_D_fake_A
         
         # Forward pass disc_B
         real_out_B = torch.squeeze(disc_B(real_mel_B))
         fake_mel_B = fake_B_buffer.push_and_pop(fake_mel_B)
         fake_out_B = torch.squeeze(disc_B(fake_mel_B.detach()))
 
-        loss_D_real_B = loss_adversarial(real_out_B, real_label)
-        loss_D_fake_B = loss_adversarial(fake_out_B, fake_label)
-        errDisc_B = (loss_D_real_B + loss_D_fake_B) / 2
+        loss_D_real_B = -torch.mean(real_out_B)
+        loss_D_fake_B = torch.mean(fake_out_B)
+        errDisc_B = loss_D_real_B + loss_D_fake_B
         
         # Backward pass and update all
         errDisc_A.backward()
@@ -222,21 +220,28 @@ for i in pbar:
         optim_disc_A.step()
         optim_disc_B.step() 
         
+        # Clip discriminator parameters
+        for p in disc_A.parameters():
+            p.data.clamp_(-clip_value, clip_value)
+            
+        for p in disc_B.parameters():
+            p.data.clamp_(-clip_value, clip_value)
+        
         # Update error log
         pbar.set_postfix(vA=loss_enc_A.item(),vB=loss_enc_B.item(), A2B=loss_dec_A2B.item(), B2A=loss_dec_B2A.item(), 
         ABA=loss_cycle_ABA.item(), BAB=loss_cycle_BAB.item(), disc_A=errDisc_A.item(), disc_B=errDisc_B.item())
         
-    	# Update error history    
-        train_hist['enc_A'].append(loss_enc_A.item())
-        train_hist['enc_B'].append(loss_enc_B.item())
-        train_hist['enc_lat'].append(loss_lat.item())
-        train_hist['dec_B2A'].append(loss_dec_B2A.item())
-        train_hist['dec_A2B'].append(loss_dec_A2B.item())
-        train_hist['dec_ABA'].append(loss_cycle_ABA.item())
-        train_hist['dec_BAB'].append(loss_cycle_BAB.item())
-        train_hist['dec'].append(errDec.item())
-        train_hist['disc_A'].append(errDisc_A.item())
-        train_hist['disc_B'].append(errDisc_B.item())    
+    # Update error history every epoch 
+    train_hist['enc_A'].append(loss_enc_A.item())
+    train_hist['enc_B'].append(loss_enc_B.item())
+    train_hist['enc_lat'].append(loss_lat.item())
+    train_hist['dec_B2A'].append(loss_dec_B2A.item())
+    train_hist['dec_A2B'].append(loss_dec_A2B.item())
+    train_hist['dec_ABA'].append(loss_cycle_ABA.item())
+    train_hist['dec_BAB'].append(loss_cycle_BAB.item())
+    train_hist['dec'].append(errDec.item())
+    train_hist['disc_A'].append(errDisc_A.item())
+    train_hist['disc_B'].append(errDisc_B.item())    
 
     # Saving updated training history and model weights every 10 epochs
     if(i % 10 == 0):
