@@ -262,11 +262,11 @@ for i in pbar:
     # Save generator B2A output per epoch
     d_in, d_out = real_B_buffer.data[0], fake_A_buffer.data[0]
     mel_in, mel_out = torch.squeeze(d_in).cpu().numpy(), torch.squeeze(d_out).cpu().numpy()
-    show_mel_transfer(mel_in, mel_out, '/a_fake_epoch_'+ str(i) + '.png')
+    show_mel_transfer(mel_in, mel_out, pooldir + '/a/a_fake_epoch_'+ str(i) + '.png')
     
     # Save generator A2B output per epoch
     d_in, d_out = real_A_buffer.data[0], fake_B_buffer.data[0]
     mel_in, mel_out = torch.squeeze(d_in).cpu().numpy(), torch.squeeze(d_out).cpu().numpy()
-    show_mel_transfer(mel_in, mel_out, '/b_fake_epoch_'+ str(i) + '.png')
+    show_mel_transfer(mel_in, mel_out, pooldir + '/b/b_fake_epoch_'+ str(i) + '.png')
     
     
