@@ -6,7 +6,7 @@ import numpy as np
 from tqdm.auto import tqdm
 import itertools
 
-from utils import load_pickle, save_pickle, ReplayBuffer, weights_init, show_mel
+from utils import load_pickle, save_pickle, ReplayBuffer, weights_init, show_mel, show_mel_transfer
 from models import ResidualBlock, Encoder, Generator, Discriminator
 
 from matplotlib import pyplot as plt
@@ -15,7 +15,7 @@ import librosa
 import os
 
 # Prepares result output
-n = '16' # Wasserstenian loss with hyperparamters
+n = '17' # Wasserstenian loss with hyperparamters
 print('Outputting to pool', n)
 pooldir = 'pool/' + str(n)
 adir = pooldir + '/a'
@@ -51,6 +51,7 @@ lambda_latent = 1 #10.0
 melset_7_128 = load_pickle('pool/melset_7_128_cont_p.pickle') 
 melset_4_128 = load_pickle('pool/melset_4_128_cont_p.pickle')
 print('Melset A size:', len(melset_7_128), 'Melset B size:', len(melset_4_128))
+print('Max duplets:', max_duplets)
 
 # Shuffling melspectrograms
 rng = np.random.default_rng()
@@ -66,14 +67,18 @@ disc_B = Discriminator().to(device)
 dec_B2A = Generator().to(device)  # Generator and Discriminator for Speaker B to A
 disc_A = Discriminator().to(device)
 
-enc.apply(weights_init)  # Initialise weights
+# Initialise weights
+enc.apply(weights_init)  
 dec_A2B.apply(weights_init)
 dec_B2A.apply(weights_init)
 disc_A.apply(weights_init)
 disc_B.apply(weights_init)
 
-fake_A_buffer = ReplayBuffer()  # Instantiate buffers
+# Instantiate buffers
+fake_A_buffer = ReplayBuffer()  
+real_A_buffer = ReplayBuffer()  
 fake_B_buffer = ReplayBuffer()
+real_B_buffer = ReplayBuffer()
 
 optim_enc = torch.optim.Adam(enc.parameters(), lr=learning_rate)  # Initialise optimizers
 optim_dec = torch.optim.Adam(itertools.chain(dec_A2B.parameters(), dec_B2A.parameters()),lr=learning_rate)
@@ -127,12 +132,12 @@ for i in pbar:
     for j in pbar_sub:
         
         # Loading real samples from each speaker in batches
-        real_mel_A = melset_7_128[j : j + batch_size].to(device)
-        real_mel_B = melset_4_128[j : j + batch_size].to(device)
+#         real_mel_A = melset_7_128[j : j + batch_size].to(device)
+#         real_mel_B = melset_4_128[j : j + batch_size].to(device)
         
-	    # Testing that loss can firstly go down with same batch
-        #real_mel_A = melset_7_128[0 : batch_size].to(device)
-        #real_mel_B = melset_4_128[0 : batch_size].to(device)
+	    #Testing that loss can firstly go down with same batch
+        real_mel_A = melset_7_128[0 : batch_size].to(device)
+        real_mel_B = melset_4_128[0 : batch_size].to(device)
         
         # Resizing to model tensors
         real_mel_A = real_mel_A.view(batch_size, 1, 128, 128)
@@ -183,7 +188,7 @@ for i in pbar:
         loss_lat = loss_latent(mu_A, mu_B)
         
         # Backward pass for generator and update all  generators
-        errDec = loss_dec_A2B + loss_dec_B2A + loss_cycle_ABA + loss_cycle_BAB # loss_enc_B + loss_enc_A + loss_lat 
+        errDec = loss_dec_A2B + loss_dec_B2A + loss_cycle_ABA + loss_cycle_BAB + loss_enc_B + loss_enc_A + loss_lat 
         errDec.backward()
         optim_enc.step()
         optim_dec.step()
@@ -198,6 +203,7 @@ for i in pbar:
         
         # Forward pass disc_A
         real_out_A = torch.squeeze(disc_A(real_mel_A))
+        real_B_buffer.push_and_pop(real_mel_B)  # Add real to buffer
         fake_mel_A = fake_A_buffer.push_and_pop(fake_mel_A)
         fake_out_A = torch.squeeze(disc_A(fake_mel_A.detach()))
         
@@ -207,6 +213,7 @@ for i in pbar:
         
         # Forward pass disc_B
         real_out_B = torch.squeeze(disc_B(real_mel_B))
+        real_A_buffer.push_and_pop(real_mel_A)  # Add real to buffer
         fake_mel_B = fake_B_buffer.push_and_pop(fake_mel_B)
         fake_out_B = torch.squeeze(disc_B(fake_mel_B.detach()))
 
@@ -252,6 +259,14 @@ for i in pbar:
         torch.save(disc_A.state_dict(),  pooldir +'/disc_A.pt')
         torch.save(disc_B.state_dict(),  pooldir +'/disc_B.pt')
 
-    # Save generated output every epoch
-    save_pickle(fake_A_buffer, adir +'/a_fake_epoch_'+str(i)+'.pickle')
-    save_pickle(fake_B_buffer, bdir +'/b_fake_epoch_'+str(i)+'.pickle')
+    # Save generator B2A output per epoch
+    d_in, d_out = real_B_buffer.data[0], fake_A_buffer.data[0]
+    mel_in, mel_out = torch.squeeze(d_in).cpu().numpy(), torch.squeeze(d_out).cpu().numpy()
+    show_mel_transfer(mel_in, mel_out, '/a_fake_epoch_'+ str(i) + '.pickle')
+    
+    # Save generator A2B output per epoch
+    d_in, d_out = real_A_buffer.data[0], fake_B_buffer.data[0]
+    mel_in, mel_out = torch.squeeze(d_in).cpu().numpy(), torch.squeeze(d_out).cpu().numpy()
+    show_mel_transfer(mel_in, mel_out, '/b_fake_epoch_'+ str(i) + '.pickle')
+    
+    
