@@ -1,6 +1,6 @@
 import torch
 device = 'cuda' # torch.device("cuda" if torch.cuda.is_available() else "cpu")
-torch.cuda.set_device(0)
+torch.cuda.set_device(1)
 
 import numpy as np
 from tqdm.auto import tqdm
@@ -15,7 +15,7 @@ import librosa
 import os
 
 # Prepares result output
-n = '17' # Wasserstenian loss with hyperparamters
+n = '20' # Back to BCE loss, on og batch size, no clipping, og data
 print('Outputting to pool', n)
 pooldir = 'pool/' + str(n)
 adir = pooldir + '/a'
@@ -34,22 +34,22 @@ if not os.path.exists(bdir):
 
 # Hyperparameters
 max_epochs = 100
-max_duplets = 1680 #5940
+max_duplets = 3000 #1680 #5940
 batch_size = 4
 learning_rate = 0.0001
 clip_value = 0.01 # lower and upper clip value for discriminator weights
 assert max_duplets % batch_size == 0, 'Max sample pairs must be divisible by batch size!' 
 
 # Loss weighting
-lambda_cycle = 1/100 #100.0
-lambda_enc = 1/100 #100.0
+lambda_cycle = 1 #1/100 #100.0
+lambda_enc = 1 #1/100 #100.0
 lambda_dec = 1 #10.0
 lambda_kld = 1 #0.001
 lambda_latent = 1 #10.0
 
 # Loading training data
-melset_7_128 = load_pickle('pool/melset_7_128_cont_p.pickle') 
-melset_4_128 = load_pickle('pool/melset_4_128_cont_p.pickle')
+melset_7_128 = load_pickle('pool/melset_7_128_100.pickle') 
+melset_4_128 = load_pickle('pool/melset_4_128_100.pickle')
 print('Melset A size:', len(melset_7_128), 'Melset B size:', len(melset_4_128))
 print('Max duplets:', max_duplets)
 
@@ -103,6 +103,7 @@ train_hist['enc_lat'] = []
 
 # Initialize criterions
 criterion_latent = torch.nn.L1Loss().to(device)
+criterion_adversarial = torch.nn.BCELoss().to(device)  
 
 # Encoder loss function for encoder, tries to retain some degree of information
 def loss_encoding(logvar, mu, fake_mel, real_mel):
@@ -110,17 +111,19 @@ def loss_encoding(logvar, mu, fake_mel, real_mel):
     mse = (fake_mel - real_mel).pow(2).mean()
     return ((kld * lambda_kld) + mse) * lambda_enc
 
-
 # Cyclic loss for reconstruction through opposing encoder, tries not to retain degree of info too closely
 def loss_cycle(logvar, mu, recon_mel, real_mel):
     kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
     mse = (recon_mel - real_mel).pow(2).mean()
     return ((kld * lambda_kld) + mse) * lambda_cycle
 
-
 # Latent loss, L1 distance between centroids of each speaker's distribution
 def loss_latent(mu_A, mu_B):
     return criterion_latent(mu_A, mu_B) * lambda_latent
+
+# Adversarial loss function for decoder and discriminator seperately
+def loss_adversarial(output, label):
+    return criterion_adversarial(output, label) * lambda_dec
 
 # =====================================================================================================
 #                                       The Training Loop
@@ -177,8 +180,8 @@ for i in pbar:
         loss_enc_B = loss_encoding(logvar_B, mu_B, fake_mel_A, real_mel_B)
         
         # Decoder/Generator loss
-        loss_dec_B2A = -torch.mean(fake_output_A)
-        loss_dec_A2B = -torch.mean(fake_output_B)
+        loss_dec_B2A = loss_adversarial(fake_output_A, real_label) #-torch.mean(fake_output_A)
+        loss_dec_A2B = loss_adversarial(fake_output_B, real_label) #-torch.mean(fake_output_B)
         
         # Cyclic loss
         loss_cycle_ABA = loss_cycle(logvar_A, mu_A, recon_mel_A, real_mel_A)
@@ -188,7 +191,7 @@ for i in pbar:
         loss_lat = loss_latent(mu_A, mu_B)
         
         # Backward pass for generator and update all  generators
-        errDec = loss_dec_A2B + loss_dec_B2A + loss_cycle_ABA + loss_cycle_BAB + loss_enc_B + loss_enc_A + loss_lat 
+        errDec = loss_dec_A2B + loss_dec_B2A #+ loss_cycle_ABA + loss_cycle_BAB + loss_enc_B + loss_enc_A + loss_lat 
         errDec.backward()
         optim_enc.step()
         optim_dec.step()
@@ -207,8 +210,8 @@ for i in pbar:
         fake_mel_A = fake_A_buffer.push_and_pop(fake_mel_A)
         fake_out_A = torch.squeeze(disc_A(fake_mel_A.detach()))
         
-        loss_D_real_A = -torch.mean(real_out_A)
-        loss_D_fake_A = torch.mean(fake_out_A)
+        loss_D_real_A = loss_adversarial(real_out_A, real_label) #-torch.mean(real_out_A)
+        loss_D_fake_A = loss_adversarial(fake_out_A, fake_label) #torch.mean(fake_out_A)
         errDisc_A = loss_D_real_A + loss_D_fake_A
         
         # Forward pass disc_B
@@ -217,8 +220,8 @@ for i in pbar:
         fake_mel_B = fake_B_buffer.push_and_pop(fake_mel_B)
         fake_out_B = torch.squeeze(disc_B(fake_mel_B.detach()))
 
-        loss_D_real_B = -torch.mean(real_out_B)
-        loss_D_fake_B = torch.mean(fake_out_B)
+        loss_D_real_B = loss_adversarial(real_out_B, real_label) #-torch.mean(real_out_B)
+        loss_D_fake_B = loss_adversarial(fake_out_B, fake_label) #torch.mean(fake_out_B)
         errDisc_B = loss_D_real_B + loss_D_fake_B
         
         # Backward pass and update all
@@ -228,11 +231,11 @@ for i in pbar:
         optim_disc_B.step() 
         
         # Clip discriminator parameters
-        for p in disc_A.parameters():
-            p.data.clamp_(-clip_value, clip_value)
+#         for p in disc_A.parameters():
+#             p.data.clamp_(-clip_value, clip_value)
             
-        for p in disc_B.parameters():
-            p.data.clamp_(-clip_value, clip_value)
+#         for p in disc_B.parameters():
+#             p.data.clamp_(-clip_value, clip_value)
         
         # Update error log
         pbar.set_postfix(vA=loss_enc_A.item(),vB=loss_enc_B.item(), A2B=loss_dec_A2B.item(), B2A=loss_dec_B2A.item(), 
