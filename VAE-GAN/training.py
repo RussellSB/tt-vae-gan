@@ -1,13 +1,13 @@
 import torch
 device = 'cuda' # torch.device("cuda" if torch.cuda.is_available() else "cpu")
-torch.cuda.set_device(1)
+torch.cuda.set_device(0)
 
 import numpy as np
 from tqdm.auto import tqdm
 import itertools
 
 from utils import load_pickle, save_pickle, ReplayBuffer, weights_init, show_mel, show_mel_transfer
-from models import ResidualBlock, Encoder, Generator, Discriminator
+from models import Encoder, ResGen, Generator, Discriminator
 
 from matplotlib import pyplot as plt
 import librosa
@@ -15,7 +15,7 @@ import librosa
 import os
 
 # Prepares result output
-n = '21' # Disc avg added back, old enc/cycle loss included
+n = '22' # modified moidel, lower weight clipping
 print('Outputting to pool', n)
 pooldir = '../pool/' + str(n)
 adir = pooldir + '/a'
@@ -37,7 +37,7 @@ max_epochs = 100
 max_duplets = 3000 #1680 #5940
 batch_size = 4
 learning_rate = 0.0001
-clip_value = 0.01 # lower and upper clip value for discriminator weights
+clip_value = 0.001 # lower and upper clip value for discriminator weights
 assert max_duplets % batch_size == 0, 'Max sample pairs must be divisible by batch size!' 
 
 # Loss weighting
@@ -48,8 +48,8 @@ lambda_kld = 1 #0.001
 lambda_latent = 1 #10.0
 
 # Loading training data
-melset_7_128 = load_pickle('../pool/melset_7_128_100.pickle') 
-melset_4_128 = load_pickle('../pool/melset_4_128_100.pickle')
+melset_7_128 = load_pickle('../pool/melset_7_128_cont.pickle') 
+melset_4_128 = load_pickle('../pool/melset_4_128_cont.pickle')
 print('Melset A size:', len(melset_7_128), 'Melset B size:', len(melset_4_128))
 print('Max duplets:', max_duplets)
 
@@ -61,14 +61,16 @@ melset_7_128 = torch.from_numpy(melset_7_128)  # Torch conversion
 melset_4_128 = torch.from_numpy(melset_4_128)
 
 # Model Instantiation
-enc = Encoder().to(device)  # Shared encoder model (with partial decoding)
+enc = Encoder().to(device)  # Shared encoder model
+res = ResGen().to(device)  # Shared residual decoding block
 dec_A2B = Generator().to(device)  # Generator and Discriminator for Speaker A to B
 disc_B = Discriminator().to(device)
 dec_B2A = Generator().to(device)  # Generator and Discriminator for Speaker B to A
 disc_A = Discriminator().to(device)
 
 # Initialise weights
-enc.apply(weights_init)  
+enc.apply(weights_init) 
+res.apply(weights_init)  
 dec_A2B.apply(weights_init)
 dec_B2A.apply(weights_init)
 disc_A.apply(weights_init)
@@ -80,7 +82,9 @@ real_A_buffer = ReplayBuffer()
 fake_B_buffer = ReplayBuffer()
 real_B_buffer = ReplayBuffer()
 
-optim_enc = torch.optim.Adam(enc.parameters(), lr=learning_rate)  # Initialise optimizers
+# Initialise optimizers
+optim_enc = torch.optim.Adam(enc.parameters(), lr=learning_rate) 
+optim_res = torch.optim.Adam(enc.parameters(), lr=learning_rate) 
 optim_dec = torch.optim.Adam(itertools.chain(dec_A2B.parameters(), dec_B2A.parameters()),lr=learning_rate)
 optim_disc_A = torch.optim.Adam(disc_A.parameters(), lr=learning_rate)
 optim_disc_B = torch.optim.Adam(disc_B.parameters(), lr=learning_rate)
@@ -122,8 +126,10 @@ def loss_latent(mu_A, mu_B):
     return criterion_latent(mu_A, mu_B) * lambda_latent
 
 # Adversarial loss function for decoder and discriminator seperately
-def loss_adversarial(output, label):
-    return criterion_adversarial(output, label) * lambda_dec
+def loss_adversarial(output, label, dec=True):
+    loss = criterion_adversarial(output, label) * lambda_dec
+    if(dec): loss *= lambda_dec
+    return loss
 
 # =====================================================================================================
 #                                       The Training Loop
@@ -161,19 +167,25 @@ for i in pbar:
 
         # Forward pass for B to A
         latent_mel_B, mu_B, logvar_B = enc(real_mel_B)
-        fake_mel_A = dec_B2A(latent_mel_B)
+        pseudo_mel_B = res(latent_mel_B)
+        fake_mel_A = dec_B2A(pseudo_mel_B)
         fake_output_A = torch.squeeze(disc_A(fake_mel_A))
+        
         # Cyclic reconstuction from fake A to B
         latent_fake_A, mu_fake_A, logvar_fake_A = enc(fake_mel_A)
-        recon_mel_B = dec_A2B(latent_fake_A)  
+        pseudo_fake_A = res(latent_fake_A)
+        recon_mel_B = dec_A2B(pseudo_fake_A)  
         
         # Forward pass for A to B
         latent_mel_A, mu_A, logvar_A = enc(real_mel_A)
-        fake_mel_B = dec_A2B(latent_mel_A)
+        pseudo_mel_A = res(latent_mel_A)
+        fake_mel_B = dec_A2B(pseudo_mel_A)
         fake_output_B = torch.squeeze(disc_B(fake_mel_B))
+        
         # Cyclic reconstuction from fake B to A
         latent_fake_B, mu_fake_B, logvar_fake_B = enc(fake_mel_B)
-        recon_mel_A = dec_B2A(latent_fake_B)  
+        pseudo_fake_B = res(latent_fake_B)
+        recon_mel_A = dec_B2A(pseudo_fake_B)  
         
         # Encoding loss A and B
         loss_enc_A = loss_encoding(logvar_A, mu_A, fake_mel_B, real_mel_A)
@@ -190,10 +202,11 @@ for i in pbar:
         # Latent loss
         loss_lat = loss_latent(mu_A, mu_B)
         
-        # Backward pass for generator and update all  generators
-        errDec = loss_dec_A2B + loss_dec_B2A + loss_cycle_ABA + loss_cycle_BAB #+ loss_enc_B + loss_enc_A + loss_lat 
+        # Backward pass for encoder and update all res/dec generator components
+        errDec = loss_dec_A2B + loss_dec_B2A + loss_cycle_ABA + loss_cycle_BAB + loss_enc_B + loss_enc_A + loss_lat 
         errDec.backward()
         optim_enc.step()
+        optim_res.step()
         optim_dec.step()
         
         # =====================================================
@@ -220,8 +233,8 @@ for i in pbar:
         fake_mel_B = fake_B_buffer.push_and_pop(fake_mel_B)
         fake_out_B = torch.squeeze(disc_B(fake_mel_B.detach()))
 
-        loss_D_real_B = loss_adversarial(real_out_B, real_label) #-torch.mean(real_out_B)
-        loss_D_fake_B = loss_adversarial(fake_out_B, fake_label) #torch.mean(fake_out_B)
+        loss_D_real_B = loss_adversarial(real_out_B, real_label, dec=False) #-torch.mean(real_out_B)
+        loss_D_fake_B = loss_adversarial(fake_out_B, fake_label, dec=False) #torch.mean(fake_out_B)
         errDisc_B = (loss_D_real_B + loss_D_fake_B) / 2
         
         # Backward pass and update all
@@ -254,7 +267,7 @@ for i in pbar:
     train_hist['disc_B'].append(errDisc_B.item())    
 
     # Saving updated training history and model weights every 10 epochs
-    if(i % 10 == 0):
+    if(i % 10 == 0 or i == 99):
         save_pickle(train_hist, pooldir +'/train_hist.pickle')
         torch.save(dec_A2B.state_dict(),  pooldir +'/dec_A2B.pt')
         torch.save(dec_B2A.state_dict(),  pooldir +'/dec_B2A.pt')

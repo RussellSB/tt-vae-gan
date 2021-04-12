@@ -7,13 +7,13 @@ class ResidualBlock(nn.Module):
         self.conv1 = nn.Sequential(
             nn.ReflectionPad2d(2),
             nn.Conv2d(dim_in, dim_in, kernel_size=4, bias=False),
-            nn.InstanceNorm2d(dim_in),
+            nn.BatchNorm2d(dim_in),
             nn.LeakyReLU(0.2, inplace=True))
         
         self.conv2 = nn.Sequential(
             nn.ReflectionPad2d(1),
             nn.Conv2d(dim_in, dim_in, kernel_size=4, bias=False),
-            nn.InstanceNorm2d(dim_in))
+            nn.BatchNorm2d(dim_in))
 
     def forward(self, x):
         y = self.conv1(x)
@@ -29,38 +29,32 @@ class Encoder(nn.Module):
         self.conv1 = nn.Sequential(
             nn.Conv2d(1, 128, kernel_size=7, bias=False), 
             nn.BatchNorm2d(128),
-            nn.LeakyReLU(0.2))
+            nn.LeakyReLU(0.2, inplace=True))
         
         # Non-linear mapping convolutional layers
         self.conv2 = nn.Sequential(
             nn.Conv2d(128, 256, kernel_size=4, bias=False, stride=2), 
             nn.BatchNorm2d(256),
-            nn.LeakyReLU(0.2))
+            nn.LeakyReLU(0.2, inplace=True))
         
         self.conv3 =nn.Sequential(
             nn.Conv2d(256, 512, kernel_size=4, bias=False, stride=2),
             nn.BatchNorm2d(512),
-            nn.LeakyReLU(0.2))
+            nn.LeakyReLU(0.2, inplace=True))
         
+                
         self.conv4 =nn.Sequential(
             nn.Conv2d(512, 1024, kernel_size=4, bias=False, stride=2),
             nn.BatchNorm2d(1024),
-            nn.LeakyReLU(0.2)) 
-                 
+            nn.LeakyReLU(0.2, inplace=True))
+
         # Skip connection to bottleneck
         self.res5 = ResidualBlock(1024)
-        #self.res5_2 = ResidualBlock(1024)
-
 
         # Fully connected bottleneck
         self.fc6 = nn.Linear(1024, 512)
         self.mu7 = nn.Linear(512, 256)
         self.logvar7 = nn.Linear(512, 256)
-        
-        # OLD: Starting with less residual blocks due to memory
-        # l.append(ResidualBlock(512, 1024))
-        # l.append(ResidualBlock(1024, 1156))
-        # l.append(ResidualBlock(1156, 1280)) 
         
     def reparameterize(self, mu, logvar):
         std = torch.exp(0.5*logvar)
@@ -72,10 +66,9 @@ class Encoder(nn.Module):
         # Main layers
         x = self.conv1(x)      
         x = self.conv2(x)      
-        x = self.conv3(x)        
-        x = self.conv4(x)     
+        x = self.conv3(x)   
+        x = self.conv4(x)
         x = self.res5(x)
-        #x = self.res5_2(x) 
         
         # Bottleneck
         x = self.fc6(x.view(-1, 1024)) 
@@ -83,25 +76,33 @@ class Encoder(nn.Module):
         logvar = self.logvar7(x)   
         z = self.reparameterize(mu, logvar)
         return z, mu, logvar
-
-
-class Generator(nn.Module):
+    
+    
+# Universal decoding residual block for first layer    
+class ResGen(nn.Module):
     def __init__(self):
-        super(Generator, self).__init__()
+        super(ResGen, self).__init__()
 
         # Bottleneck opening
         self.fc1 = nn.Linear(256, 512)
         self.fc2 = nn.Linear(512, 1024)
         
         # Skip connections
-        self.res1 = ResidualBlock(1024)  
-        #self.res1_2 = ResidualBlock(1024)
-
-        # OLD: Starting with less residual blocks due to memory
-        # l.append(ResidualBlock(1156, 1024))
-        # l.append(ResidualBlock(1024, 512)) 
+        self.res1 = ResidualBlock(1024)
         
-        # Non-linear mapping convolutional layers
+    def forward(self, x):
+        x = self.fc1(x) 
+        x = self.fc2(x) 
+        x = self.res1(x.view(-1, 1024, 13, 13)) 
+        return x
+
+
+class Generator(nn.Module):
+    def __init__(self):
+        super(Generator, self).__init__()
+        
+        #self.res1_2 = ResidualBlock(512)
+        
         self.conv2 = nn.Sequential(
             nn.ConvTranspose2d(1024, 512, kernel_size=4, bias=False, stride=2),
             nn.BatchNorm2d(512),
@@ -123,11 +124,8 @@ class Generator(nn.Module):
             nn.Tanh())  # wrt DCGAN 
         
     def forward(self, x):
-        x = self.fc1(x) 
-        x = self.fc2(x) 
-        x = self.res1(x.view(-1, 1024, 13, 13))  
         #x = self.res1_2(x)
-        x = self.conv2(x) 
+        x = self.conv2(x)
         x = self.conv3(x) 
         x = self.conv4(x) 
         x = self.conv5(x) 
