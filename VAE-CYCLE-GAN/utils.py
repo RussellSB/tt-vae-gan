@@ -3,6 +3,9 @@ import librosa
 import librosa.display
 from matplotlib import pyplot as plt
 
+import warnings
+warnings.filterwarnings( "ignore", module = "matplotlib\..*" )  # ignore plot warnings
+
 import torch
 import torch.nn as nn
 import numpy as np
@@ -25,13 +28,15 @@ def show_mel(mel):
     plt.colorbar(format="%+2.f dB")
 
 # Plots mels that are already amplitude scaled
-def show_mel_transfer(mel_in, mel_out, save_path):
+def show_mel_transfer(mel_in, mel_out, save_path, mel_s=False):
     fig, ax = plt.subplots(nrows=2, ncols=1, sharex=True)
     
+    if not mel_s: mel_in = librosa.power_to_db(mel_in, ref=np.max)
     im = librosa.display.specshow(mel_in, x_axis='time', y_axis='mel', sr=16000, hop_length=200, ax=ax[0])
     ax[0].set(title='Input Melspectrogram')
     ax[0].label_outer()
     
+    if not mel_s: mel_out = librosa.power_to_db(mel_out, ref=np.max)
     im = librosa.display.specshow(mel_out, x_axis='time', y_axis='mel', sr=16000, hop_length=200, ax=ax[1])
     ax[1].set(title='Output Melspectrogram')
     ax[1].label_outer()
