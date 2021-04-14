@@ -1,6 +1,6 @@
 import torch
 device = 'cuda' # torch.device("cuda" if torch.cuda.is_available() else "cpu")
-torch.cuda.set_device(1)
+torch.cuda.set_device(0)
 
 import numpy as np
 from tqdm.auto import tqdm
@@ -15,7 +15,7 @@ import librosa
 import os
 
 # Prepares result output
-n = '27' # np.logarooni w/ Wass
+n = '34' # hyperparams mse, modified losses to be kld - mse, custom hyperparams
 print('Outputting to pool', n)
 pooldir = '../pool/' + str(n)
 adir = pooldir + '/a'
@@ -36,25 +36,25 @@ if not os.path.exists(bdir):
 max_epochs = 100
 max_duplets = 1680 #3000 #1680 #5940
 batch_size = 4
-learning_rate = 0.0001
+learning_rate = 0.0002 # 0.0001 # 
 clip_value = 0.001 # lower and upper clip value for discriminator weights
 assert max_duplets % batch_size == 0, 'Max sample pairs must be divisible by batch size!' 
 
-# OBJECTIVE
-loss_mode = 'mse'  # set to 'bce' or 'mse'
-isWass = True # either true or false to make a wGAN (negates loss_mode when True)
+# OBJECTIVEn
+loss_mode = 'bce'  # set to 'bce' or 'mse'
+isWass = False # either true or false to make a wGAN (negates loss_mode when True)
 
 # Loss weighting
-lambda_cycle = 1 #1/100 #100.0
-lambda_enc = 1 #1/100 #100.0
-lambda_dec = 1 #10.0
-lambda_kld = 1 #0.001
-lambda_latent = 1 #10.0
+lambda_cycle = 100.0 
+lambda_enc = 100.0 
+lambda_dec = 5.0 # 10.0 # 
+lambda_kld = 0.01 # 0.0001 #
+lambda_latent = 10.0
 
 # Loading training data
-melset_7_128 = load_pickle('../pool/melset_7_128_cont_s.pickle') 
-melset_4_128 = load_pickle('../pool/melset_4_128_cont_s.pickle')
-mel_s = True
+melset_7_128 = load_pickle('../pool/melset_7_128_cont.pickle') 
+melset_4_128 = load_pickle('../pool/melset_4_128_cont.pickle')
+mel_s = False  # turns out working with dB over power, halts learning for inconclusive reasons
 print('Melset A size:', len(melset_7_128), 'Melset B size:', len(melset_4_128))
 print('Max duplets:', max_duplets)
 
@@ -118,13 +118,13 @@ criterion_adversarial = torch.nn.BCELoss().to(device) if (loss_mode=='bce') else
 def loss_encoding(logvar, mu, fake_mel, real_mel):
     kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
     mse = (fake_mel - real_mel).pow(2).mean()
-    return ((kld * lambda_kld) + mse) * lambda_enc
+    return ((kld * lambda_kld) - mse) * lambda_enc
 
 # Cyclic loss for reconstruction through opposing encoder, tries not to retain degree of info too closely
 def loss_cycle(logvar, mu, recon_mel, real_mel):
     kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
     mse = (recon_mel - real_mel).pow(2).mean()
-    return ((kld * lambda_kld) + mse) * lambda_cycle
+    return ((kld * lambda_kld) - mse) * lambda_cycle
 
 # Latent loss, L1 distance between centroids of each speaker's distribution
 def loss_latent(mu_A, mu_B):
@@ -146,12 +146,12 @@ for i in pbar:
     for j in pbar_sub:
         
         # Loading real samples from each speaker in batches
-#         real_mel_A = melset_7_128[j : j + batch_size].to(device)
-#         real_mel_B = melset_4_128[j : j + batch_size].to(device)
+        real_mel_A = melset_7_128[j : j + batch_size].to(device)
+        real_mel_B = melset_4_128[j : j + batch_size].to(device)
         
 	    #Testing that loss can firstly go down with same batch
-        real_mel_A = melset_7_128[0 : batch_size].to(device)
-        real_mel_B = melset_4_128[0 : batch_size].to(device)
+#         real_mel_A = melset_7_128[0 : batch_size].to(device)
+#         real_mel_B = melset_4_128[0 : batch_size].to(device)
         
         # Resizing to model tensors
         real_mel_A = real_mel_A.view(batch_size, 1, 128, 128)
@@ -168,6 +168,7 @@ for i in pbar:
 
         # Resetting gradients
         optim_enc.zero_grad()
+        optim_res.zero_grad()  
         optim_dec.zero_grad()   
 
         # Forward pass for B to A

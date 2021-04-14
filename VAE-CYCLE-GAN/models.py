@@ -102,6 +102,7 @@ class Generator(nn.Module):
         super(Generator, self).__init__()
         
         self.res1_2 = ResidualBlock(1024)
+        #self.res1_3 = ResidualBlock(1024)
         
         self.conv2 = nn.Sequential(
             nn.ConvTranspose2d(1024, 512, kernel_size=4, bias=False, stride=2),
@@ -125,6 +126,7 @@ class Generator(nn.Module):
         
     def forward(self, x):
         x = self.res1_2(x)
+        #x = self.res1_3(x) seemingly worse
         x = self.conv2(x)
         x = self.conv3(x) 
         x = self.conv4(x) 
