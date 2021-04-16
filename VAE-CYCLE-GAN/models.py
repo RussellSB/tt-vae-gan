@@ -6,13 +6,13 @@ class ResidualBlock(nn.Module):
         super(ResidualBlock, self).__init__()
         self.conv1 = nn.Sequential(
             nn.ReflectionPad2d(2),
-            nn.Conv2d(dim_in, dim_in, kernel_size=4, bias=False),
+            nn.Conv2d(dim_in, dim_in, kernel_size=4),
             nn.BatchNorm2d(dim_in),
             nn.LeakyReLU(0.2, inplace=True))
         
         self.conv2 = nn.Sequential(
             nn.ReflectionPad2d(1),
-            nn.Conv2d(dim_in, dim_in, kernel_size=4, bias=False),
+            nn.Conv2d(dim_in, dim_in, kernel_size=4),
             nn.BatchNorm2d(dim_in))
 
     def forward(self, x):
@@ -27,24 +27,24 @@ class Encoder(nn.Module):
         
         # Initial linear convolutional mapping
         self.conv1 = nn.Sequential(
-            nn.Conv2d(1, 128, kernel_size=7, bias=False), 
+            nn.Conv2d(1, 128, kernel_size=7), 
             nn.BatchNorm2d(128),
             nn.LeakyReLU(0.2, inplace=True))
         
         # Non-linear mapping convolutional layers
         self.conv2 = nn.Sequential(
-            nn.Conv2d(128, 256, kernel_size=4, bias=False, stride=2), 
+            nn.Conv2d(128, 256, kernel_size=4, stride=2), 
             nn.BatchNorm2d(256),
             nn.LeakyReLU(0.2, inplace=True))
         
         self.conv3 =nn.Sequential(
-            nn.Conv2d(256, 512, kernel_size=4, bias=False, stride=2),
+            nn.Conv2d(256, 512, kernel_size=4, stride=2),
             nn.BatchNorm2d(512),
             nn.LeakyReLU(0.2, inplace=True))
         
                 
         self.conv4 =nn.Sequential(
-            nn.Conv2d(512, 1024, kernel_size=4, bias=False, stride=2),
+            nn.Conv2d(512, 1024, kernel_size=4, stride=2),
             nn.BatchNorm2d(1024),
             nn.LeakyReLU(0.2, inplace=True))
 
@@ -105,23 +105,23 @@ class Generator(nn.Module):
         #self.res1_3 = ResidualBlock(1024)
         
         self.conv2 = nn.Sequential(
-            nn.ConvTranspose2d(1024, 512, kernel_size=4, bias=False, stride=2),
+            nn.ConvTranspose2d(1024, 512, kernel_size=4, stride=2),
             nn.BatchNorm2d(512),
             nn.LeakyReLU(0.2))
         
         self.conv3 = nn.Sequential(
-            nn.ConvTranspose2d(512, 256, kernel_size=4, bias=False, stride=2), 
+            nn.ConvTranspose2d(512, 256, kernel_size=4, stride=2), 
             nn.BatchNorm2d(256),
             nn.LeakyReLU(0.2))
         
         self.conv4 = nn.Sequential(
-            nn.ConvTranspose2d(256, 128, kernel_size=4, bias=False, stride=2), 
+            nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2), 
             nn.BatchNorm2d(128),
             nn.LeakyReLU(0.2))
         
         # Final linear convolutional mapping 
         self.conv5 = nn.Sequential(
-            nn.ConvTranspose2d(128, 1, kernel_size=11, bias=False), 
+            nn.ConvTranspose2d(128, 1, kernel_size=11), 
             nn.Tanh())  # wrt DCGAN 
         
     def forward(self, x):
@@ -139,27 +139,27 @@ class Discriminator(nn.Module):
         super(Discriminator, self).__init__()
         
         self.conv1 = nn.Sequential(
-            nn.Conv2d(1, 64, kernel_size=4, bias=False, stride=2, padding=1),
+            nn.Conv2d(1, 64, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(64),
             nn.LeakyReLU(0.2, inplace=True))
         
         self.conv2 = nn.Sequential(
-            nn.Conv2d(64, 128, kernel_size=4, bias=False, stride=2, padding=1),
+            nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(128),
             nn.LeakyReLU(0.2, inplace=True))
         
         self.conv3 = nn.Sequential(
-            nn.Conv2d(128, 256, kernel_size=4, bias=False, stride=2, padding=1),
+            nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(256),
             nn.LeakyReLU(0.2, inplace=True))
         
         self.conv4 = nn.Sequential(
-            nn.Conv2d(256, 512, kernel_size=4, bias=False, stride=2, padding=1),
+            nn.Conv2d(256, 512, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(512),
             nn.LeakyReLU(0.2, inplace=True))
                 
         self.conv5 = nn.Sequential(
-            nn.Conv2d(512, 1, kernel_size=8, bias=False),
+            nn.Conv2d(512, 1, kernel_size=8),
             nn.Sigmoid())  # wrt DCGAN
 
     def forward(self, x):

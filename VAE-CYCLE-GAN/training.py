@@ -15,7 +15,7 @@ import librosa
 import os
 
 # Prepares result output
-n = '34' # hyperparams mse, modified losses to be kld - mse, custom hyperparams
+n = '36' # hyperparams mse, custom hyperparams
 print('Outputting to pool', n)
 pooldir = '../pool/' + str(n)
 adir = pooldir + '/a'
@@ -45,11 +45,11 @@ loss_mode = 'bce'  # set to 'bce' or 'mse'
 isWass = False # either true or false to make a wGAN (negates loss_mode when True)
 
 # Loss weighting
-lambda_cycle = 100.0 
-lambda_enc = 100.0 
-lambda_dec = 5.0 # 10.0 # 
-lambda_kld = 0.01 # 0.0001 #
-lambda_latent = 10.0
+lambda_cycle = 1 #100.0 
+lambda_enc = 1 #100.0 
+lambda_dec = 1 #10.0 # 10.0 # 
+lambda_kld = 1 #0.0001 # 0.0001 #
+lambda_latent = 1 #10.0
 
 # Loading training data
 melset_7_128 = load_pickle('../pool/melset_7_128_cont.pickle') 
@@ -118,13 +118,13 @@ criterion_adversarial = torch.nn.BCELoss().to(device) if (loss_mode=='bce') else
 def loss_encoding(logvar, mu, fake_mel, real_mel):
     kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
     mse = (fake_mel - real_mel).pow(2).mean()
-    return ((kld * lambda_kld) - mse) * lambda_enc
+    return ((kld * lambda_kld) + mse) * lambda_enc
 
 # Cyclic loss for reconstruction through opposing encoder, tries not to retain degree of info too closely
 def loss_cycle(logvar, mu, recon_mel, real_mel):
     kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
     mse = (recon_mel - real_mel).pow(2).mean()
-    return ((kld * lambda_kld) - mse) * lambda_cycle
+    return ((kld * lambda_kld) + mse) * lambda_cycle
 
 # Latent loss, L1 distance between centroids of each speaker's distribution
 def loss_latent(mu_A, mu_B):
