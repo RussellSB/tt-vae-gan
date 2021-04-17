@@ -22,8 +22,9 @@ def load_pickle(path):
         return pickle.load(fp)
 
 # Plots mels that are already amplitude scaled
-def show_mel(mel):
+def show_mel(mel, mel_s=False):
     plt.figure(figsize=(10, 2))
+    if not mel_s: mel = librosa.power_to_db(mel, ref=np.max)
     img = librosa.display.specshow(mel, x_axis='time', y_axis='mel', sr=16000, hop_length=200)
     plt.colorbar(format="%+2.f dB")
 

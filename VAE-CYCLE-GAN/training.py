@@ -15,7 +15,7 @@ import librosa
 import os
 
 # Prepares result output
-n = '36' # hyperparams mse, custom hyperparams
+n = '38' # mse naked
 print('Outputting to pool', n)
 pooldir = '../pool/' + str(n)
 adir = pooldir + '/a'
@@ -33,7 +33,7 @@ if not os.path.exists(bdir):
     os.mkdir(bdir)
 
 # Hyperparameters
-max_epochs = 100
+max_epochs = 200# 100
 max_duplets = 1680 #3000 #1680 #5940
 batch_size = 4
 learning_rate = 0.0002 # 0.0001 # 
@@ -41,15 +41,15 @@ clip_value = 0.001 # lower and upper clip value for discriminator weights
 assert max_duplets % batch_size == 0, 'Max sample pairs must be divisible by batch size!' 
 
 # OBJECTIVEn
-loss_mode = 'bce'  # set to 'bce' or 'mse'
+loss_mode = 'mse'  # set to 'bce' or 'mse'
 isWass = False # either true or false to make a wGAN (negates loss_mode when True)
 
 # Loss weighting
-lambda_cycle = 1 #100.0 
-lambda_enc = 1 #100.0 
-lambda_dec = 1 #10.0 # 10.0 # 
-lambda_kld = 1 #0.0001 # 0.0001 #
-lambda_latent = 1 #10.0
+lambda_cycle = 100.0 
+lambda_enc = 100.0 
+lambda_dec = 10.0 # 10.0 # 
+lambda_kld = 0.0001 # 0.0001 #
+lambda_latent = 10.0
 
 # Loading training data
 melset_7_128 = load_pickle('../pool/melset_7_128_cont.pickle') 

@@ -2,3 +2,9 @@ pool/
 flickr_audio.tar.gz
 flickr_audio/
 .venv/
+MELGAN/wavs/
+MELGAN/train_files.txt
+MELGAN/test_files.txt
+MELGAN/pool
+MELGAN/logs/
+MELGAN/wavsexport/
