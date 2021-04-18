@@ -116,15 +116,25 @@ criterion_adversarial = torch.nn.BCELoss().to(device) if (loss_mode=='bce') else
 
 # Encoder loss function for encoder, tries to retain some degree of information
 def loss_encoding(logvar, mu, fake_mel, real_mel):
-    kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
-    mse = (fake_mel - real_mel).pow(2).mean()
-    return ((kld * lambda_kld) + mse * lambda_enc) 
+#     kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+#     recon = (fake_mel - real_mel).pow(2).mean()
+
+    mu_2 = torch.pow(mu, 2)
+    kld = torch.mean(mu_2)
+    recon = criterion_latent(recon_mel, real_mel)
+
+    return ((kld * lambda_kld) + recon * lambda_enc) 
 
 # Cyclic loss for reconstruction through opposing encoder, tries not to retain degree of info too closely
 def loss_cycle(logvar, mu, recon_mel, real_mel):
-    kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
-    mse = (recon_mel - real_mel).pow(2).mean()
-    return ((kld * lambda_kld) + mse * lambda_cycle) 
+#     kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+#     recon = (recon_mel - real_mel).pow(2).mean()
+    
+    mu_2 = torch.pow(mu, 2)
+    kld = torch.mean(mu_2)
+    recon = criterion_latent(recon_mel, real_mel)
+    
+    return ((kld * lambda_kld) + recon * lambda_cycle) 
 
 # Latent loss, L1 distance between centroids of each speaker's distribution
 def loss_latent(mu_A, mu_B):
