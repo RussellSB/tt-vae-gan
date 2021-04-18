@@ -15,7 +15,7 @@ import librosa
 import os
 
 # Prepares result output
-n = '40' # TORUN, More faithful to UNIT (TODO - a question of losses), 
+n = '40' #  More faithful to UNIT (a question of kld losses), 
 print('Outputting to pool', n)
 pooldir = '../pool/' + str(n)
 adir = pooldir + '/a'
@@ -115,20 +115,20 @@ criterion_latent = torch.nn.L1Loss().to(device)
 criterion_adversarial = torch.nn.BCELoss().to(device) if (loss_mode=='bce') else torch.nn.MSELoss().to(device)
 
 # Encoder loss function for encoder, tries to retain some degree of information
-def loss_encoding(logvar, mu, fake_mel, real_mel):
-#     kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
-#     recon = (fake_mel - real_mel).pow(2).mean()
+def loss_encoding(mu, fake_mel, real_mel):
+    # kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+    # recon = (fake_mel - real_mel).pow(2).mean()
 
     mu_2 = torch.pow(mu, 2)
     kld = torch.mean(mu_2)
-    recon = criterion_latent(recon_mel, real_mel)
+    recon = criterion_latent(fake_mel, real_mel)
 
     return ((kld * lambda_kld) + recon * lambda_enc) 
 
 # Cyclic loss for reconstruction through opposing encoder, tries not to retain degree of info too closely
-def loss_cycle(logvar, mu, recon_mel, real_mel):
-#     kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
-#     recon = (recon_mel - real_mel).pow(2).mean()
+def loss_cycle(mu, recon_mel, real_mel):
+    # kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+    # recon = (recon_mel - real_mel).pow(2).mean()
     
     mu_2 = torch.pow(mu, 2)
     kld = torch.mean(mu_2)
@@ -159,9 +159,9 @@ for i in pbar:
         real_mel_A = melset_7_128[j : j + batch_size].to(device)
         real_mel_B = melset_4_128[j : j + batch_size].to(device)
         
-	    #Testing that loss can firstly go down with same batch
-#         real_mel_A = melset_7_128[0 : batch_size].to(device)
-#         real_mel_B = melset_4_128[0 : batch_size].to(device)
+	    # Testing that loss can firstly go down with same batch
+        #real_mel_A = melset_7_128[0 : batch_size].to(device)
+        #real_mel_B = melset_4_128[0 : batch_size].to(device)
         
         # Resizing to model tensors
         real_mel_A = real_mel_A.view(batch_size, 1, 128, 128)
@@ -177,38 +177,38 @@ for i in pbar:
         # =====================================================  
 
         # Forward pass for B to A
-        latent_mel_B, mu_B, logvar_B = enc(real_mel_B)
+        latent_mel_B, mu_B = enc(real_mel_B)
         pseudo_mel_B = res(latent_mel_B)
         fake_mel_A = dec_B2A(pseudo_mel_B)
         fake_output_A = torch.squeeze(disc_A(fake_mel_A))
         
         # Cyclic reconstuction from fake A to B
-        latent_fake_A, mu_fake_A, logvar_fake_A = enc(fake_mel_A)
+        latent_fake_A, mu_fake_A = enc(fake_mel_A)
         pseudo_fake_A = res(latent_fake_A)
         recon_mel_B = dec_A2B(pseudo_fake_A)  
         
         # Forward pass for A to B
-        latent_mel_A, mu_A, logvar_A = enc(real_mel_A)
+        latent_mel_A, mu_A = enc(real_mel_A)
         pseudo_mel_A = res(latent_mel_A)
         fake_mel_B = dec_A2B(pseudo_mel_A)
         fake_output_B = torch.squeeze(disc_B(fake_mel_B))
         
         # Cyclic reconstuction from fake B to A
-        latent_fake_B, mu_fake_B, logvar_fake_B = enc(fake_mel_B)
+        latent_fake_B, mu_fake_B = enc(fake_mel_B)
         pseudo_fake_B = res(latent_fake_B)
         recon_mel_A = dec_B2A(pseudo_fake_B)  
         
         # Encoding loss A and B
-        loss_enc_A = loss_encoding(logvar_A, mu_A, fake_mel_B, real_mel_A)
-        loss_enc_B = loss_encoding(logvar_B, mu_B, fake_mel_A, real_mel_B)
+        loss_enc_A = loss_encoding(mu_A, fake_mel_B, real_mel_A)
+        loss_enc_B = loss_encoding(mu_B, fake_mel_A, real_mel_B)
         
         # Decoder/Generator loss
         loss_dec_B2A = loss_adversarial(fake_output_A, real_label) if (not isWass) else -torch.mean(fake_output_A) 
         loss_dec_A2B = loss_adversarial(fake_output_B, real_label) if (not isWass) else -torch.mean(fake_output_B)
         
         # Cyclic loss
-        loss_cycle_ABA = loss_cycle(logvar_A, mu_A, recon_mel_A, real_mel_A)
-        loss_cycle_BAB = loss_cycle(logvar_B, mu_B, recon_mel_B, real_mel_B)
+        loss_cycle_ABA = loss_cycle(mu_A, recon_mel_A, real_mel_A)
+        loss_cycle_BAB = loss_cycle(mu_B, recon_mel_B, real_mel_B)
 
         # Latent loss
         loss_lat = loss_latent(mu_A, mu_B)

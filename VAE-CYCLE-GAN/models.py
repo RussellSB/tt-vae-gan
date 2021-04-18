@@ -1,5 +1,7 @@
 import torch
 import torch.nn as nn
+from torch.autograd import Variable
+import numpy as np
 
 class ResidualBlock(nn.Module):
     def __init__(self, dim_in):
@@ -54,12 +56,16 @@ class Encoder(nn.Module):
         # Fully connected bottleneck
         self.fc6 = nn.Linear(1024, 512)
         self.mu7 = nn.Linear(512, 256)
-        self.logvar7 = nn.Linear(512, 256)
+        #self.logvar7 = nn.Linear(512, 256)
         
-    def reparameterize(self, mu, logvar):
-        std = torch.exp(0.5*logvar)
-        eps = torch.randn_like(std)
-        return mu + eps*std
+    def reparameterize(self, mu):
+        #std = torch.exp(0.5*logvar)
+        #eps = torch.randn_like(std)
+        #return mu + eps*std
+        
+        Tensor = torch.cuda.FloatTensor if mu.is_cuda else torch.FloatTensor
+        z = Variable(Tensor(np.random.normal(0, 1, mu.shape)))       
+        return z + mu 
         
     def forward(self, x):     
         
@@ -73,9 +79,9 @@ class Encoder(nn.Module):
         # Bottleneck
         x = self.fc6(x.view(-1, 1024)) 
         mu = self.mu7(x)
-        logvar = self.logvar7(x)   
-        z = self.reparameterize(mu, logvar)
-        return z, mu, logvar
+        #logvar = self.logvar7(x)   
+        z = self.reparameterize(mu)#, logvar)
+        return z, mu #, logvar
     
     
 # Universal decoding residual block for first layer    
