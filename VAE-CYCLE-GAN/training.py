@@ -15,7 +15,7 @@ import librosa
 import os
 
 # Prepares result output
-n = '39' # mse hyperparams eidt to unit
+n = '40' # TORUN, More faithful to UNIT (TODO - a question of losses), 
 print('Outputting to pool', n)
 pooldir = '../pool/' + str(n)
 adir = pooldir + '/a'
@@ -33,15 +33,15 @@ if not os.path.exists(bdir):
     os.mkdir(bdir)
 
 # Hyperparameters
-max_epochs = 200# 100
+max_epochs = 200 # 100
 max_duplets = 1680 #3000 #1680 #5940
 batch_size = 4
 learning_rate = 0.0002 # 0.0001 # 
-clip_value = 0.001 # lower and upper clip value for discriminator weights
 assert max_duplets % batch_size == 0, 'Max sample pairs must be divisible by batch size!' 
 
 # OBJECTIVEn
 loss_mode = 'mse'  # set to 'bce' or 'mse'
+clip_value = 0.001 # lower and upper clip value for discriminator weights (used when is
 isWass = False # either true or false to make a wGAN (negates loss_mode when True)
 
 # Loss weighting
@@ -164,12 +164,7 @@ for i in pbar:
         
         # =====================================================
         #            Encoders and Decoding Generators update
-        # =====================================================
-
-        # Resetting gradients
-        optim_enc.zero_grad()
-        optim_res.zero_grad()  
-        optim_dec.zero_grad()   
+        # =====================================================  
 
         # Forward pass for B to A
         latent_mel_B, mu_B, logvar_B = enc(real_mel_B)
@@ -208,6 +203,11 @@ for i in pbar:
         # Latent loss
         loss_lat = loss_latent(mu_A, mu_B)
         
+        # Resetting gradients
+        optim_enc.zero_grad()
+        optim_res.zero_grad()  
+        optim_dec.zero_grad() 
+        
         # Backward pass for encoder and update all res/dec generator components
         errDec = loss_dec_A2B + loss_dec_B2A + loss_cycle_ABA + loss_cycle_BAB + loss_enc_B + loss_enc_A + loss_lat 
         errDec.backward()
@@ -218,11 +218,7 @@ for i in pbar:
         # =====================================================
         #                   Discriminators update
         # =====================================================
-        
-        # Resetting gradients
-        optim_disc_A.zero_grad()
-        optim_disc_B.zero_grad()
-        
+
         # Forward pass disc_A
         real_out_A = torch.squeeze(disc_A(real_mel_A))
         real_B_buffer.push_and_pop(real_mel_B)  # Add real to buffer
@@ -242,6 +238,10 @@ for i in pbar:
         loss_D_real_B = loss_adversarial(real_out_B, real_label, dec_lambda=False) if (not isWass) else -torch.mean(real_out_B)
         loss_D_fake_B = loss_adversarial(fake_out_B, fake_label, dec_lambda=False) if (not isWass) else torch.mean(fake_out_B)
         errDisc_B = (loss_D_real_B + loss_D_fake_B) / 2 if (not isWass) else loss_D_real_B + loss_D_fake_B
+                
+        # Resetting gradients
+        optim_disc_A.zero_grad()
+        optim_disc_B.zero_grad()
         
         # Backward pass and update all
         errDisc_A.backward()
