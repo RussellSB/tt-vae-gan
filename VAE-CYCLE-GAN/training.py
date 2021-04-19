@@ -1,6 +1,6 @@
 import torch
 device = 'cuda' # torch.device("cuda" if torch.cuda.is_available() else "cpu")
-torch.cuda.set_device(2)
+torch.cuda.set_device(3)
 
 import numpy as np
 from tqdm.auto import tqdm
@@ -15,7 +15,7 @@ import librosa
 import os
 
 # Prepares result output
-n = '40' #  More faithful to UNIT (a question of kld losses), 
+n = '43' #  More faithful to UNIT but bce
 print('Outputting to pool', n)
 pooldir = '../pool/' + str(n)
 adir = pooldir + '/a'
@@ -36,18 +36,18 @@ if not os.path.exists(bdir):
 max_epochs = 200 # 100
 max_duplets = 1680 #3000 #1680 #5940
 batch_size = 4
-learning_rate = 0.0002 # 0.0001 # 
+learning_rate = 0.0001 #  0.0002 # 
 assert max_duplets % batch_size == 0, 'Max sample pairs must be divisible by batch size!' 
 
 # OBJECTIVEn
 loss_mode = 'mse'  # set to 'bce' or 'mse'
-clip_value = 0.001 # lower and upper clip value for discriminator weights (used when is
 isWass = False # either true or false to make a wGAN (negates loss_mode when True)
+clip_value = 0.001 # lower and upper clip value for discriminator weights (used when isWass is True)
 
 # Loss weighting
 lambda_cycle = 100.0 
 lambda_enc = 100.0 
-lambda_dec = 10.0 # 10.0 # 
+lambda_dec = 50.0 #10.0 # 10.0 # 
 lambda_kld = 0.0001 # 0.0001 #
 lambda_latent = 10.0
 
@@ -82,10 +82,11 @@ disc_A.apply(weights_init)
 disc_B.apply(weights_init)
 
 # Instantiate buffers
-fake_A_buffer = ReplayBuffer()  
 real_A_buffer = ReplayBuffer()  
-fake_B_buffer = ReplayBuffer()
 real_B_buffer = ReplayBuffer()
+
+fake_A_buffer = ReplayBuffer() 
+fake_B_buffer = ReplayBuffer()
 
 # Initialise optimizers
 optim_enc = torch.optim.Adam(enc.parameters(), lr=learning_rate) 
@@ -114,7 +115,7 @@ train_hist['enc_lat'] = []
 criterion_latent = torch.nn.L1Loss().to(device)
 criterion_adversarial = torch.nn.BCELoss().to(device) if (loss_mode=='bce') else torch.nn.MSELoss().to(device)
 
-# Encoder loss function for encoder, tries to retain some degree of information
+# Encoder loss function for encoder, motivate mapping of same information from input to output
 def loss_encoding(mu, fake_mel, real_mel):
     # kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
     # recon = (fake_mel - real_mel).pow(2).mean()
@@ -125,7 +126,7 @@ def loss_encoding(mu, fake_mel, real_mel):
 
     return ((kld * lambda_kld) + recon * lambda_enc) 
 
-# Cyclic loss for reconstruction through opposing encoder, tries not to retain degree of info too closely
+# Cyclic loss for reconstruction through opposing encoder, motivate mapping of information differently to output
 def loss_cycle(mu, recon_mel, real_mel):
     # kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
     # recon = (recon_mel - real_mel).pow(2).mean()
@@ -283,15 +284,6 @@ for i in pbar:
         train_hist['disc_A'].append(errDisc_A.item())
         train_hist['disc_B'].append(errDisc_B.item())    
 
-    # Saving updated training history and model weights every 10 epochs (or on last epoch)
-    if(i % 10 == 0 or i == 99):
-        save_pickle(train_hist, pooldir +'/train_hist.pickle')
-        torch.save(dec_A2B.state_dict(),  pooldir +'/dec_A2B.pt')
-        torch.save(dec_B2A.state_dict(),  pooldir +'/dec_B2A.pt')
-        torch.save(enc.state_dict(), pooldir +'/enc.pt')
-        torch.save(disc_A.state_dict(),  pooldir +'/disc_A.pt')
-        torch.save(disc_B.state_dict(),  pooldir +'/disc_B.pt')
-
     # Save generator B2A output per epoch
     d_in, d_out = real_B_buffer.data[0], fake_A_buffer.data[0]
     mel_in, mel_out = torch.squeeze(d_in).cpu().numpy(), torch.squeeze(d_out).cpu().numpy()
@@ -302,4 +294,21 @@ for i in pbar:
     mel_in, mel_out = torch.squeeze(d_in).cpu().numpy(), torch.squeeze(d_out).cpu().numpy()
     show_mel_transfer(mel_in, mel_out, pooldir + '/b/b_fake_epoch_'+ str(i) + '.png', mel_s)
     
-    
+    # Saving every 10 epochs (or on last epoch)
+    if(i % 10 == 0 or i == 99):
+        # Save updated training history and model weights
+        save_pickle(train_hist, pooldir +'/train_hist.pickle')
+        torch.save(dec_A2B.state_dict(),  pooldir +'/dec_A2B.pt')
+        torch.save(dec_B2A.state_dict(),  pooldir +'/dec_B2A.pt')
+        torch.save(res.state_dict(), pooldir +'/res.pt')
+        torch.save(enc.state_dict(), pooldir +'/enc.pt')
+        torch.save(disc_A.state_dict(),  pooldir +'/disc_A.pt')
+        torch.save(disc_B.state_dict(),  pooldir +'/disc_B.pt')
+        
+        # Save buffers, to later use for comparing data distributions with FID
+        save_pickle(real_A_buffer, pooldir +'/real_A_buffer.pickle')
+        save_pickle(real_B_buffer, pooldir +'/real_B_buffer.pickle')
+        save_pickle(fake_A_buffer, pooldir +'/fake_A_buffer.pickle')
+        save_pickle(fake_B_buffer, pooldir +'/fake_B_buffer.pickle')
+        
+        

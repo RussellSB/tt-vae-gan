@@ -47,7 +47,7 @@ def show_mel_transfer(mel_in, mel_out, save_path, mel_s=False):
 # Stores generated output from past 50 iterations 
 # (Author: https://github.com/Lornatang/CycleGAN-PyTorch/blob/master/cyclegan_pytorch/utils.py)
 class ReplayBuffer:
-    def __init__(self, max_size=10):
+    def __init__(self, max_size=50):
         assert (max_size > 0), "Empty buffer or trying to create a black hole. Be careful."
         self.max_size = max_size
         self.data = []
