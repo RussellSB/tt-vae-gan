@@ -22,25 +22,27 @@ def load_pickle(path):
         return pickle.load(fp)
 
 # Plots mels that are already amplitude scaled
-def show_mel(mel, mel_s=False):
-    plt.figure(figsize=(10, 2))
-    if not mel_s: mel = librosa.power_to_db(mel, ref=np.max)
-    img = librosa.display.specshow(mel, x_axis='time', y_axis='mel', sr=16000, hop_length=200)
-    plt.colorbar(format="%+2.f dB")
+def show_mel(mel):
+    plt.figure()
+    plt.imshow(np.rot90(mel), interpolation="None")
+    plt.ylabel('Mels')
+    plt.ylabel('Frames')
+    plt.title('Melspectrogram')
+    plt.tight_layout()
 
 # Plots mels that are already amplitude scaled
-def show_mel_transfer(mel_in, mel_out, save_path, mel_s=False):
-    fig, ax = plt.subplots(nrows=2, ncols=1, sharex=True)
+def show_mel_transfer(mel_in, mel_out, save_path):
+    fig, ax = plt.subplots(nrows=2, ncols=1, sharex=True, figsize=(11, 11))
     
-    if not mel_s: mel_in = librosa.power_to_db(mel_in, ref=np.max)
-    im = librosa.display.specshow(mel_in, x_axis='time', y_axis='mel', sr=16000, hop_length=200, ax=ax[0])
-    ax[0].set(title='Input Melspectrogram')
-    ax[0].label_outer()
-    
-    if not mel_s: mel_out = librosa.power_to_db(mel_out, ref=np.max)
-    im = librosa.display.specshow(mel_out, x_axis='time', y_axis='mel', sr=16000, hop_length=200, ax=ax[1])
-    ax[1].set(title='Output Melspectrogram')
-    ax[1].label_outer()
+    ax[0].imshow(np.rot90(mel), interpolation="None")
+    ax[0].set(title='Input')
+    ax[0].set_xlabel('Frames')
+    ax[0].set_ylabel('Mels')
+
+    ax[1].imshow(np.rot90(mel), interpolation="None")
+    ax[1].set(title='Output')
+    ax[1].set_xlabel('Frames')
+    ax[1].set_ylabel('Mels')
     
     plt.savefig(save_path)
 

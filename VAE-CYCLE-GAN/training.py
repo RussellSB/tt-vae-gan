@@ -1,6 +1,6 @@
 import torch
 device = 'cuda' # torch.device("cuda" if torch.cuda.is_available() else "cpu")
-torch.cuda.set_device(3)
+torch.cuda.set_device(2)
 
 import numpy as np
 from tqdm.auto import tqdm
@@ -15,7 +15,7 @@ import librosa
 import os
 
 # Prepares result output
-n = '43' #  More faithful to UNIT but bce
+n = '44' #  Using wavenet normalized log melspectrograms
 print('Outputting to pool', n)
 pooldir = '../pool/' + str(n)
 adir = pooldir + '/a'
@@ -47,13 +47,13 @@ clip_value = 0.001 # lower and upper clip value for discriminator weights (used 
 # Loss weighting
 lambda_cycle = 100.0 
 lambda_enc = 100.0 
-lambda_dec = 50.0 #10.0 # 10.0 # 
+lambda_dec = 10.0 #10.0 # 10.0 # 50.0
 lambda_kld = 0.0001 # 0.0001 #
 lambda_latent = 10.0
 
 # Loading training data
-melset_7_128 = load_pickle('../pool/melset_7_128_cont.pickle') 
-melset_4_128 = load_pickle('../pool/melset_4_128_cont.pickle')
+melset_7_128 = load_pickle('../pool/melset_7_128_cont_wn.pickle') 
+melset_4_128 = load_pickle('../pool/melset_4_128_cont_wn.pickle')
 mel_s = False  # turns out working with dB over power, halts learning for inconclusive reasons
 print('Melset A size:', len(melset_7_128), 'Melset B size:', len(melset_4_128))
 print('Max duplets:', max_duplets)
