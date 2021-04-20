@@ -1,6 +1,6 @@
 import torch
 device = 'cuda' # torch.device("cuda" if torch.cuda.is_available() else "cpu")
-torch.cuda.set_device(2)
+torch.cuda.set_device(3)
 
 import numpy as np
 from tqdm.auto import tqdm
@@ -15,7 +15,7 @@ import librosa
 import os
 
 # Prepares result output
-n = '44' #  Using wavenet normalized log melspectrograms
+n = '45' #  Using wavenet normalized log melspectrograms, but with bce
 print('Outputting to pool', n)
 pooldir = '../pool/' + str(n)
 adir = pooldir + '/a'
@@ -40,14 +40,14 @@ learning_rate = 0.0001 #  0.0002 #
 assert max_duplets % batch_size == 0, 'Max sample pairs must be divisible by batch size!' 
 
 # OBJECTIVEn
-loss_mode = 'mse'  # set to 'bce' or 'mse'
+loss_mode = 'bce'  # set to 'bce' or 'mse'
 isWass = False # either true or false to make a wGAN (negates loss_mode when True)
 clip_value = 0.001 # lower and upper clip value for discriminator weights (used when isWass is True)
 
 # Loss weighting
 lambda_cycle = 100.0 
 lambda_enc = 100.0 
-lambda_dec = 10.0 #10.0 # 10.0 # 50.0
+lambda_dec = 1 #10.0 #10.0 # 10.0 # 50.0
 lambda_kld = 0.0001 # 0.0001 #
 lambda_latent = 10.0
 
