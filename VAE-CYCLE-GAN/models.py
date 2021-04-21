@@ -56,13 +56,8 @@ class Encoder(nn.Module):
         # Fully connected bottleneck
         self.fc6 = nn.Linear(1024, 512)
         self.mu7 = nn.Linear(512, 256)
-        #self.logvar7 = nn.Linear(512, 256)
         
     def reparameterize(self, mu):
-        #std = torch.exp(0.5*logvar)
-        #eps = torch.randn_like(std)
-        #return mu + eps*std
-        
         Tensor = torch.cuda.FloatTensor if mu.is_cuda else torch.FloatTensor
         z = Variable(Tensor(np.random.normal(0, 1, mu.shape)))       
         return z + mu 
@@ -78,10 +73,9 @@ class Encoder(nn.Module):
         
         # Bottleneck
         x = self.fc6(x.view(-1, 1024)) 
-        mu = self.mu7(x)
-        #logvar = self.logvar7(x)   
-        z = self.reparameterize(mu)#, logvar)
-        return z, mu #, logvar
+        mu = self.mu7(x) 
+        z = self.reparameterize(mu)
+        return z, mu
     
     
 # Universal decoding residual block for first layer    
@@ -108,7 +102,7 @@ class Generator(nn.Module):
         super(Generator, self).__init__()
         
         self.res1_2 = ResidualBlock(1024)
-        #self.res1_3 = ResidualBlock(1024)
+        self.res1_3 = ResidualBlock(1024)
         
         self.conv2 = nn.Sequential(
             nn.ConvTranspose2d(1024, 512, kernel_size=4, stride=2),
@@ -132,7 +126,7 @@ class Generator(nn.Module):
         
     def forward(self, x):
         x = self.res1_2(x)
-        #x = self.res1_3(x) seemingly worse
+        x = self.res1_3(x)
         x = self.conv2(x)
         x = self.conv3(x) 
         x = self.conv4(x) 
@@ -147,22 +141,30 @@ class Discriminator(nn.Module):
         self.conv1 = nn.Sequential(
             nn.Conv2d(1, 64, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(64),
-            nn.LeakyReLU(0.2, inplace=True))
+            nn.LeakyReLU(0.2, inplace=True), 
+            nn.Dropout(0.3)  # only for experiment >50
+        )
         
         self.conv2 = nn.Sequential(
             nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(128),
-            nn.LeakyReLU(0.2, inplace=True))
+            nn.LeakyReLU(0.2, inplace=True), 
+            nn.Dropout(0.3)  # only for experiment >50
+        )
         
         self.conv3 = nn.Sequential(
             nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(256),
-            nn.LeakyReLU(0.2, inplace=True))
+            nn.LeakyReLU(0.2, inplace=True), 
+            nn.Dropout(0.3)  # only for experiment >50
+        )
         
         self.conv4 = nn.Sequential(
             nn.Conv2d(256, 512, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(512),
-            nn.LeakyReLU(0.2, inplace=True))
+            nn.LeakyReLU(0.2, inplace=True), 
+            nn.Dropout(0.3)  # only for experiment >50
+        )
                 
         self.conv5 = nn.Sequential(
             nn.Conv2d(512, 1, kernel_size=8),

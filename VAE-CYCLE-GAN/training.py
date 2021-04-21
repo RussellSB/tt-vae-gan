@@ -15,7 +15,7 @@ import librosa
 import os
 
 # Prepares result output
-n = '49' #  Using wavenet normalized log melspectrograms, but with wsgan
+n = '52' #  dropout, BCE, 3 res layers
 print('Outputting to pool', n)
 pooldir = '../pool/' + str(n)
 adir = pooldir + '/a'
@@ -33,10 +33,10 @@ if not os.path.exists(bdir):
     os.mkdir(bdir)
 
 # Hyperparameters
-max_epochs = 200 # 100
-max_duplets = 1680 #3000 #1680 #5940
+max_epochs = 100
+max_duplets = 1680 
 batch_size = 4
-learning_rate = 0.0001 #  0.0002 # 
+learning_rate = 0.0001
 assert max_duplets % batch_size == 0, 'Max sample pairs must be divisible by batch size!' 
 
 # OBJECTIVEn
@@ -47,8 +47,8 @@ clip_value = 0.0001 # lower and upper clip value for discriminator weights (used
 # Loss weighting
 lambda_cycle = 100.0 
 lambda_enc = 100.0 
-lambda_dec = 1 # 10.0 # 100.0 # 1.0
-lambda_kld = 0.0001 # 0.0001 #
+lambda_dec = 1 # 10.0 # 1.0
+lambda_kld = 0.0001
 lambda_latent = 10.0
 
 # Loading training data
