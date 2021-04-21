@@ -34,17 +34,18 @@ def show_mel(mel):
 def show_mel_transfer(mel_in, mel_out, save_path):
     fig, ax = plt.subplots(nrows=2, ncols=1, sharex=True, figsize=(11, 11))
     
-    ax[0].imshow(np.rot90(mel), interpolation="None")
+    ax[0].imshow(np.rot90(mel_in), interpolation="None")
     ax[0].set(title='Input')
     ax[0].set_xlabel('Frames')
     ax[0].set_ylabel('Mels')
 
-    ax[1].imshow(np.rot90(mel), interpolation="None")
+    ax[1].imshow(np.rot90(mel_out), interpolation="None")
     ax[1].set(title='Output')
     ax[1].set_xlabel('Frames')
     ax[1].set_ylabel('Mels')
     
     plt.savefig(save_path)
+    plt.close()
 
 # Stores generated output from past 50 iterations 
 # (Author: https://github.com/Lornatang/CycleGAN-PyTorch/blob/master/cyclegan_pytorch/utils.py)

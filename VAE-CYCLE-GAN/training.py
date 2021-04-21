@@ -1,6 +1,6 @@
 import torch
 device = 'cuda' # torch.device("cuda" if torch.cuda.is_available() else "cpu")
-torch.cuda.set_device(3)
+torch.cuda.set_device(0)
 
 import numpy as np
 from tqdm.auto import tqdm
@@ -15,7 +15,7 @@ import librosa
 import os
 
 # Prepares result output
-n = '45' #  Using wavenet normalized log melspectrograms, but with bce
+n = '49' #  Using wavenet normalized log melspectrograms, but with wsgan
 print('Outputting to pool', n)
 pooldir = '../pool/' + str(n)
 adir = pooldir + '/a'
@@ -42,19 +42,18 @@ assert max_duplets % batch_size == 0, 'Max sample pairs must be divisible by bat
 # OBJECTIVEn
 loss_mode = 'bce'  # set to 'bce' or 'mse'
 isWass = False # either true or false to make a wGAN (negates loss_mode when True)
-clip_value = 0.001 # lower and upper clip value for discriminator weights (used when isWass is True)
+clip_value = 0.0001 # lower and upper clip value for discriminator weights (used when isWass is True)
 
 # Loss weighting
 lambda_cycle = 100.0 
 lambda_enc = 100.0 
-lambda_dec = 1 #10.0 #10.0 # 10.0 # 50.0
+lambda_dec = 1 # 10.0 # 100.0 # 1.0
 lambda_kld = 0.0001 # 0.0001 #
 lambda_latent = 10.0
 
 # Loading training data
 melset_7_128 = load_pickle('../pool/melset_7_128_cont_wn.pickle') 
 melset_4_128 = load_pickle('../pool/melset_4_128_cont_wn.pickle')
-mel_s = False  # turns out working with dB over power, halts learning for inconclusive reasons
 print('Melset A size:', len(melset_7_128), 'Melset B size:', len(melset_4_128))
 print('Max duplets:', max_duplets)
 
@@ -204,8 +203,8 @@ for i in pbar:
         loss_enc_B = loss_encoding(mu_B, fake_mel_A, real_mel_B)
         
         # Decoder/Generator loss
-        loss_dec_B2A = loss_adversarial(fake_output_A, real_label) if (not isWass) else -torch.mean(fake_output_A) 
-        loss_dec_A2B = loss_adversarial(fake_output_B, real_label) if (not isWass) else -torch.mean(fake_output_B)
+        loss_dec_B2A = loss_adversarial(fake_output_A, real_label) if (not isWass) else -torch.mean(fake_output_A) * lambda_dec
+        loss_dec_A2B = loss_adversarial(fake_output_B, real_label) if (not isWass) else -torch.mean(fake_output_B) * lambda_dec
         
         # Cyclic loss
         loss_cycle_ABA = loss_cycle(mu_A, recon_mel_A, real_mel_A)
@@ -287,12 +286,12 @@ for i in pbar:
     # Save generator B2A output per epoch
     d_in, d_out = real_B_buffer.data[0], fake_A_buffer.data[0]
     mel_in, mel_out = torch.squeeze(d_in).cpu().numpy(), torch.squeeze(d_out).cpu().numpy()
-    show_mel_transfer(mel_in, mel_out, pooldir + '/a/a_fake_epoch_'+ str(i) + '.png', mel_s)
+    show_mel_transfer(mel_in, mel_out, pooldir + '/a/a_fake_epoch_'+ str(i) + '.png')
     
     # Save generator A2B output per epoch
     d_in, d_out = real_A_buffer.data[0], fake_B_buffer.data[0]
     mel_in, mel_out = torch.squeeze(d_in).cpu().numpy(), torch.squeeze(d_out).cpu().numpy()
-    show_mel_transfer(mel_in, mel_out, pooldir + '/b/b_fake_epoch_'+ str(i) + '.png', mel_s)
+    show_mel_transfer(mel_in, mel_out, pooldir + '/b/b_fake_epoch_'+ str(i) + '.png')
     
     # Saving every 10 epochs (or on last epoch)
     if(i % 10 == 0 or i == 99):
