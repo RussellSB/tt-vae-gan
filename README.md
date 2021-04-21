@@ -1,4 +1,4 @@
-# voice-conversion-gan (Work in Progress)
+# voice-conversion-vae-cycle-gan (Work in Progress)
 A neural style transfer model for speech.
 
 The VAE-CYCLE-GAN is based on [Ehab A. AlBadawy](https://ebadawy.github.io/post/speech_style_transfer/). Due to dealines, this repo isn't in the most representable of states right now - but the model works! Please refer to my code in VAE-CYCLE-GAN. Feel free to use the architecture form in model.py and refer to training.py for forward inference and loss definitions. The currenmt architecture only works with melspectrograms of a 128x128 size. Melspectrogram parameters are the same as that of the paper. Updates for user-friendliness and adabtability to come in the future.
