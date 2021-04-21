@@ -31,18 +31,21 @@ def show_mel(mel):
     plt.tight_layout()
 
 # Plots mels that are already amplitude scaled
-def show_mel_transfer(mel_in, mel_out, save_path):
-    fig, ax = plt.subplots(nrows=2, ncols=1, sharex=True, figsize=(11, 11))
+def show_mel_transfer(mel_in, mel_recon, mel_out, save_path):
+    fig, ax = plt.subplots(nrows=1, ncols=3, sharex=True)
     
     ax[0].imshow(np.rot90(mel_in), interpolation="None")
     ax[0].set(title='Input')
-    ax[0].set_xlabel('Frames')
     ax[0].set_ylabel('Mels')
+    
+    ax[1].imshow(np.rot90(mel_recon), interpolation="None")
+    ax[1].set(title='Reconstructed Input')
+    ax[1].axes.yaxis.set_ticks([])
 
-    ax[1].imshow(np.rot90(mel_out), interpolation="None")
-    ax[1].set(title='Output')
-    ax[1].set_xlabel('Frames')
-    ax[1].set_ylabel('Mels')
+    ax[2].imshow(np.rot90(mel_out), interpolation="None")
+    ax[2].set(title='Output')
+    ax[2].set_xlabel('Frames')
+    ax[2].axes.yaxis.set_ticks([])
     
     plt.savefig(save_path)
     plt.close()
@@ -50,7 +53,7 @@ def show_mel_transfer(mel_in, mel_out, save_path):
 # Stores generated output from past 50 iterations 
 # (Author: https://github.com/Lornatang/CycleGAN-PyTorch/blob/master/cyclegan_pytorch/utils.py)
 class ReplayBuffer:
-    def __init__(self, max_size=50):
+    def __init__(self, max_size=10):
         assert (max_size > 0), "Empty buffer or trying to create a black hole. Be careful."
         self.max_size = max_size
         self.data = []

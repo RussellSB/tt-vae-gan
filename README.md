@@ -11,3 +11,9 @@ The current architecture only works with melspectrograms of a 128x128 size. Mels
 - Organise test/evaluation stage for easy replication
 - Link dataset
 - Update readme with setup tutorial
+
+## NOTES
+- VAE loss without unit variance versions are in its own sperate scripts for now (_logvar)
+- Can choose either 'bce', 'mse', or Wasserstenian mode for adversarial loss
+- Discriminator will use sigmoid at end only if BCE (like DCGAN)
+- No fancy data loader is used for now, data is loaded as a list of images
