@@ -10,3 +10,4 @@ The current architecture only works with melspectrograms of a 128x128 size. Mels
 - Organise preprocessing stage for easy replication
 - Organise test/evaluation stage for easy replication
 - Link dataset
+- Update readme with setup tutorial
