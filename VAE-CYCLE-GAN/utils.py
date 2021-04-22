@@ -30,7 +30,7 @@ def show_mel(mel):
     plt.title('Melspectrogram')
     plt.tight_layout()
 
-# Plots mels that are already amplitude scaled
+# Plots mels that are already amplitude scaled and saves
 def show_mel_transfer(mel_in, mel_recon, mel_out, save_path):
     fig, ax = plt.subplots(nrows=1, ncols=3, sharex=True)
     
@@ -46,9 +46,10 @@ def show_mel_transfer(mel_in, mel_recon, mel_out, save_path):
     ax[2].set(title='Output')
     ax[2].set_xlabel('Frames')
     ax[2].axes.yaxis.set_ticks([])
-    
+
     plt.savefig(save_path)
     plt.close()
+
 
 # Stores generated output from past 50 iterations 
 # (Author: https://github.com/Lornatang/CycleGAN-PyTorch/blob/master/cyclegan_pytorch/utils.py)

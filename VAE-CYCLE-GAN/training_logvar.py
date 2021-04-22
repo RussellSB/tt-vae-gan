@@ -1,6 +1,6 @@
 import torch
 device = 'cuda' # torch.device("cuda" if torch.cuda.is_available() else "cpu")
-torch.cuda.set_device(3)
+torch.cuda.set_device(1)
 
 import numpy as np
 from tqdm.auto import tqdm
@@ -15,7 +15,7 @@ import librosa
 import os
 
 # Prepares result output
-n = '57' 
+n = '59' 
 print('Outputting to pool', n)
 pooldir = '../pool/' + str(n)
 adir = pooldir + '/a'
@@ -40,16 +40,16 @@ learning_rate = 0.0001
 assert max_duplets % batch_size == 0, 'Max sample pairs must be divisible by batch size!' 
 
 # OBJECTIVEn
-loss_mode = 'mse'  # set to 'bce' or 'mse'
-isWass = False # either true or false to make a wGAN (negates loss_mode when True)
-clip_value = 0.0001 # lower and upper clip value for discriminator weights (used when isWass is True)
+loss_mode = 'ws'  # set to 'bce' or 'mse' or 'ws'
+isWass = True # either true or false to make a wGAN (negates loss_mode when True)
+clip_value = 0.001 # lower and upper clip value for discriminator weights (used when isWass is True)
 
 # Loss weighting
-lambda_cycle = 100.0 
-lambda_enc = 100.0 
-lambda_dec = 10.0 # 10.0 # 1.0
+lambda_cycle = 1 # 100.0 
+lambda_enc = 1 # 100.0 
+lambda_dec = 1 #10.0 # 10.0 # 1.0
 lambda_kld = 0.0001
-lambda_latent = 10.0
+lambda_latent = 1 # 10.0
 
 # Loading training data
 melset_7_128 = load_pickle('../pool/melset_7_128_cont_wn.pickle') 
