@@ -15,7 +15,7 @@ import librosa
 import os
 
 # Prepares result output
-n = '55' 
+n = '62' 
 print('Outputting to pool', n)
 pooldir = '../pool/' + str(n)
 adir = pooldir + '/a'
@@ -47,7 +47,7 @@ clip_value = 0.001 # lower and upper clip value for discriminator weights (used 
 # Loss weighting
 lambda_cycle = 100.0 # 100.0 
 lambda_enc = 100.0 # 100.0 
-lambda_dec = 10.0 #10.0 # 10.0 # 1.0
+lambda_dec = 1.0 #10.0 # 10.0 # 1.0
 lambda_kld = 0.0001
 lambda_latent = 10.0 # 10.0
 
