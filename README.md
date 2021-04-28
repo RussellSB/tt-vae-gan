@@ -5,6 +5,9 @@ Due to deadlines, this repo isn't in the most representable of states right now 
 
 The current architecture only works with melspectrograms of a 128x128 size. Melspectrogram parameters are the same as that of the paper. Updates for user-friendliness and adabtability to come in the future.
 
+## TODO IMP
+- Add extra resblocks to encoder. Include data loader to not consume so much GPU RAM.
+
 ## TODO
 - Fork WaveNet repo and commit changes
 - Organise preprocessing stage for easy replication
