@@ -52,15 +52,18 @@ class Encoder(nn.Module):
 
         # Skip connection to bottleneck
         self.res5 = ResidualBlock(1024)
+        self.res5_2 = ResidualBlock(1024)
+        self.res5_3 = ResidualBlock(1024)
 
         # Fully connected bottleneck
         self.fc6 = nn.Linear(1024, 512)
         self.mu7 = nn.Linear(512, 256)
+        self.logvar7 = nn.Linear(512, 256)
         
-    def reparameterize(self, mu):
-        Tensor = torch.cuda.FloatTensor if mu.is_cuda else torch.FloatTensor
-        z = Variable(Tensor(np.random.normal(0, 1, mu.shape)))       
-        return z + mu 
+    def reparameterize(self, mu, logvar):
+        std = torch.exp(0.5*logvar)
+        eps = torch.randn_like(std)
+        return mu + eps*std
         
     def forward(self, x):     
         
@@ -70,12 +73,15 @@ class Encoder(nn.Module):
         x = self.conv3(x)   
         x = self.conv4(x)
         x = self.res5(x)
+        x = self.res5_2(x)
+        x = self.res5_3(x)
         
         # Bottleneck
         x = self.fc6(x.view(-1, 1024)) 
-        mu = self.mu7(x) 
-        z = self.reparameterize(mu)
-        return z, mu
+        mu = self.mu7(x)
+        logvar = self.logvar7(x)   
+        z = self.reparameterize(mu, logvar)
+        return z, mu, logvar
     
     
 # Universal decoding residual block for first layer    
@@ -101,6 +107,7 @@ class Generator(nn.Module):
     def __init__(self):
         super(Generator, self).__init__()
         
+        # The first res block is shared
         self.res1_2 = ResidualBlock(1024)
         self.res1_3 = ResidualBlock(1024)
         
@@ -134,7 +141,7 @@ class Generator(nn.Module):
         return x
 
 
-class Discriminator(nn.Module):
+class Discriminator(nn.Module, ):
     def __init__(self, loss_mode='bce'):
         super(Discriminator, self).__init__()
         self.loss_mode = loss_mode
@@ -177,4 +184,4 @@ class Discriminator(nn.Module):
         x = self.conv4(x)
         x = self.conv5(x)
         if (self.loss_mode == 'bce'): x = self.linear_activ(x) # only apply sigmoid like DCGAN when adv loss is BCE
-        return x        
+        return x   

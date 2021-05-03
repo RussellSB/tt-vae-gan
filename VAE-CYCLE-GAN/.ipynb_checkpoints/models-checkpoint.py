@@ -52,6 +52,8 @@ class Encoder(nn.Module):
 
         # Skip connection to bottleneck
         self.res5 = ResidualBlock(1024)
+        self.res5_2 = ResidualBlock(1024)
+        self.res5_3 = ResidualBlock(1024)
 
         # Fully connected bottleneck
         self.fc6 = nn.Linear(1024, 512)
@@ -71,6 +73,8 @@ class Encoder(nn.Module):
         x = self.conv3(x)   
         x = self.conv4(x)
         x = self.res5(x)
+        x = self.res5_2(x)
+        x = self.res5_3(x)
         
         # Bottleneck
         x = self.fc6(x.view(-1, 1024)) 
@@ -103,6 +107,7 @@ class Generator(nn.Module):
     def __init__(self):
         super(Generator, self).__init__()
         
+        # The first res block is shared
         self.res1_2 = ResidualBlock(1024)
         self.res1_3 = ResidualBlock(1024)
         

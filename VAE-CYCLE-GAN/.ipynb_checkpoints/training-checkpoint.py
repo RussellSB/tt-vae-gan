@@ -1,13 +1,13 @@
 import torch
 device = 'cuda' # torch.device("cuda" if torch.cuda.is_available() else "cpu")
-torch.cuda.set_device(2)
+torch.cuda.set_device(0)
 
 import numpy as np
 from tqdm.auto import tqdm
 import itertools
 
 from utils import load_pickle, save_pickle, ReplayBuffer, weights_init, show_mel, show_mel_transfer
-from models_logvar import Encoder, ResGen, Generator, Discriminator
+from models import Encoder, ResGen, Generator, Discriminator
 
 from matplotlib import pyplot as plt
 import librosa
@@ -15,7 +15,7 @@ import librosa
 import os
 
 # Prepares result output
-n = '63' 
+n = '64' # Now testing with moar residual blocks as GOD intended
 print('Outputting to pool', n)
 pooldir = '../pool/' + str(n)
 adir = pooldir + '/a'
@@ -40,7 +40,7 @@ learning_rate = 0.0001
 assert max_duplets % batch_size == 0, 'Max sample pairs must be divisible by batch size!' 
 
 # OBJECTIVEn
-loss_mode = 'mse'  # set to 'bce' or 'mse' or 'ws'
+loss_mode = 'bce'  # set to 'bce' or 'mse' or 'ws'
 isWass = False # either true or false to make a wGAN (negates loss_mode when True)
 clip_value = 0.001 # lower and upper clip value for discriminator weights (used when isWass is True)
 
@@ -122,20 +122,12 @@ def loss_encoding(logvar, mu, fake_mel, real_mel):
     kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
     recon = (fake_mel - real_mel).pow(2).mean()
 
-#     mu_2 = torch.pow(mu, 2)
-#     kld = torch.mean(mu_2)
-#     recon = criterion_latent(fake_mel, real_mel)
-
     return ((kld * lambda_kld) + recon * lambda_enc) 
 
 # Cyclic loss for reconstruction through opposing encoder, motivate mapping of information differently to output
 def loss_cycle(logvar, mu, recon_mel, real_mel):
     kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
     recon = (recon_mel - real_mel).pow(2).mean()
-    
-#     mu_2 = torch.pow(mu, 2)
-#     kld = torch.mean(mu_2)
-#     recon = criterion_latent(recon_mel, real_mel)
     
     return ((kld * lambda_kld) + recon * lambda_cycle) 
 
