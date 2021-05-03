@@ -120,14 +120,14 @@ criterion_adversarial = torch.nn.BCELoss().to(device) if (loss_mode=='bce') else
 # Encoder loss function for encoder, motivate mapping of same information from input to output
 def loss_encoding(logvar, mu, fake_mel, real_mel):
     kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
-    recon = (fake_mel - real_mel).pow(2).mean()
+    recon = criterion_latent(fake_mel, real_mel)
 
     return ((kld * lambda_kld) + recon * lambda_enc) 
 
 # Cyclic loss for reconstruction through opposing encoder, motivate mapping of information differently to output
 def loss_cycle(logvar, mu, recon_mel, real_mel):
     kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
-    recon = (recon_mel - real_mel).pow(2).mean()
+    recon = criterion_latent(recon_mel, real_mel)
     
     return ((kld * lambda_kld) + recon * lambda_cycle) 
 
