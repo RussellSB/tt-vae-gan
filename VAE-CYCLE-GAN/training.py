@@ -73,12 +73,22 @@ dec_B2A = Generator().to(device)  # Generator and Discriminator for Speaker B to
 disc_A = Discriminator(loss_mode).to(device)
 
 # Initialise weights
-enc.apply(weights_init) 
-res.apply(weights_init)  
-dec_A2B.apply(weights_init)
-dec_B2A.apply(weights_init)
-disc_A.apply(weights_init)
-disc_B.apply(weights_init)
+# enc.apply(weights_init) 
+# res.apply(weights_init)  
+# dec_A2B.apply(weights_init)
+# dec_B2A.apply(weights_init)
+# disc_A.apply(weights_init)
+# disc_B.apply(weights_init)
+# curr_epoch = 0
+
+# OR LOAD PREV WEIGHTS
+enc.load_state_dict(torch.load(pooldir+'/enc.pt')) 
+res.load_state_dict(torch.load(pooldir+'/res.pt')) 
+dec_A2B.load_state_dict(torch.load(pooldir+'/dec_A2B.pt'))
+dec_B2A.load_state_dict(torch.load(pooldir+'/dec_B2A.pt'))
+disc_A.load_state_dict(torch.load(pooldir+'/disc_A.pt'))
+disc_B.load_state_dict(torch.load(pooldir+'/disc_B.pt'))
+curr_epoch = 63
 
 # Instantiate buffers
 real_A_buffer = ReplayBuffer() 
@@ -136,15 +146,14 @@ def loss_latent(mu_A, mu_B):
     return criterion_latent(mu_A, mu_B) * lambda_latent
 
 # Adversarial loss function for decoder and discriminator seperately
-def loss_adversarial(output, label, dec_lambda=True):
+def loss_adversarial(output, label):
     loss = criterion_adversarial(output, label) * lambda_dec
-    if(dec_lambda): loss *= lambda_dec
     return loss
 
 # =====================================================================================================
 #                                       The Training Loop
 # =====================================================================================================
-pbar = tqdm(range(max_epochs), desc='Epochs')  # init epoch pbar
+pbar = tqdm(range(curr_epoch, max_epochs), desc='Epochs')  # init epoch pbar
 for i in pbar:
     
     pbar_sub = tqdm(range(0, max_duplets, batch_size),leave=False, desc='Batches')  # init batch pbar
@@ -231,8 +240,8 @@ for i in pbar:
         fake_mel_A = fake_A_buffer.push_and_pop(fake_mel_A)
         fake_out_A = torch.squeeze(disc_A(fake_mel_A.detach()))
         
-        loss_D_real_A = loss_adversarial(real_out_A, real_label, dec_lambda=False) if (not isWass) else -torch.mean(real_out_A)
-        loss_D_fake_A = loss_adversarial(fake_out_A, fake_label, dec_lambda=False) if (not isWass) else torch.mean(fake_out_A) 
+        loss_D_real_A = loss_adversarial(real_out_A, real_label) if (not isWass) else -torch.mean(real_out_A)
+        loss_D_fake_A = loss_adversarial(fake_out_A, fake_label) if (not isWass) else torch.mean(fake_out_A) 
         errDisc_A = (loss_D_real_A + loss_D_fake_A) / 2  if (not isWass) else loss_D_real_A + loss_D_fake_A
         
         # Forward pass disc_B
@@ -242,8 +251,8 @@ for i in pbar:
         fake_mel_B = fake_B_buffer.push_and_pop(fake_mel_B)
         fake_out_B = torch.squeeze(disc_B(fake_mel_B.detach()))
 
-        loss_D_real_B = loss_adversarial(real_out_B, real_label, dec_lambda=False) if (not isWass) else -torch.mean(real_out_B)
-        loss_D_fake_B = loss_adversarial(fake_out_B, fake_label, dec_lambda=False) if (not isWass) else torch.mean(fake_out_B)
+        loss_D_real_B = loss_adversarial(real_out_B, real_label) if (not isWass) else -torch.mean(real_out_B)
+        loss_D_fake_B = loss_adversarial(fake_out_B, fake_label) if (not isWass) else torch.mean(fake_out_B)
         errDisc_B = (loss_D_real_B + loss_D_fake_B) / 2 if (not isWass) else loss_D_real_B + loss_D_fake_B
                 
         # Resetting gradients
