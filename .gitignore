@@ -3,3 +3,4 @@ flickr_audio.tar.gz
 flickr_audio/
 .venv/
 *.ipynb
+.ipynb_checkpoints
