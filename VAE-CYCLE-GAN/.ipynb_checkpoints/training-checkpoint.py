@@ -1,6 +1,6 @@
 import torch
 device = 'cuda' # torch.device("cuda" if torch.cuda.is_available() else "cpu")
-torch.cuda.set_device(0)
+torch.cuda.set_device(1)
 
 import numpy as np
 from tqdm.auto import tqdm
@@ -15,7 +15,7 @@ import librosa
 import os
 
 # Prepares result output
-n = '64' # Now testing with moar residual blocks as GOD intended
+n = '66' # Moar residual blocks, but with MSE not BCE for adv loss
 print('Outputting to pool', n)
 pooldir = '../pool/' + str(n)
 adir = pooldir + '/a'
@@ -35,7 +35,7 @@ if not os.path.exists(bdir):
 # Hyperparameters
 max_epochs = 100
 max_duplets = 1680 
-batch_size = 4
+batch_size = 8 # 4
 learning_rate = 0.0001
 assert max_duplets % batch_size == 0, 'Max sample pairs must be divisible by batch size!' 
 
@@ -47,7 +47,7 @@ clip_value = 0.001 # lower and upper clip value for discriminator weights (used 
 # Loss weighting
 lambda_cycle = 100.0 # 100.0 
 lambda_enc = 100.0 # 100.0 
-lambda_dec = 1.0 #10.0 # 10.0 # 1.0
+lambda_dec = 10.0 #10.0 # 10.0 # 1.0
 lambda_kld = 0.0001
 lambda_latent = 10.0 # 10.0
 
@@ -73,22 +73,22 @@ dec_B2A = Generator().to(device)  # Generator and Discriminator for Speaker B to
 disc_A = Discriminator(loss_mode).to(device)
 
 # Initialise weights
-# enc.apply(weights_init) 
-# res.apply(weights_init)  
-# dec_A2B.apply(weights_init)
-# dec_B2A.apply(weights_init)
-# disc_A.apply(weights_init)
-# disc_B.apply(weights_init)
-# curr_epoch = 0
+enc.apply(weights_init) 
+res.apply(weights_init)  
+dec_A2B.apply(weights_init)
+dec_B2A.apply(weights_init)
+disc_A.apply(weights_init)
+disc_B.apply(weights_init)
+curr_epoch = 0
 
 # OR LOAD PREV WEIGHTS
-enc.load_state_dict(torch.load(pooldir+'/enc.pt')) 
-res.load_state_dict(torch.load(pooldir+'/res.pt')) 
-dec_A2B.load_state_dict(torch.load(pooldir+'/dec_A2B.pt'))
-dec_B2A.load_state_dict(torch.load(pooldir+'/dec_B2A.pt'))
-disc_A.load_state_dict(torch.load(pooldir+'/disc_A.pt'))
-disc_B.load_state_dict(torch.load(pooldir+'/disc_B.pt'))
-curr_epoch = 63
+# enc.load_state_dict(torch.load(pooldir+'/enc.pt')) 
+# res.load_state_dict(torch.load(pooldir+'/res.pt')) 
+# dec_A2B.load_state_dict(torch.load(pooldir+'/dec_A2B.pt'))
+# dec_B2A.load_state_dict(torch.load(pooldir+'/dec_B2A.pt'))
+# disc_A.load_state_dict(torch.load(pooldir+'/disc_A.pt'))
+# disc_B.load_state_dict(torch.load(pooldir+'/disc_B.pt'))
+# curr_epoch = 63
 
 # Instantiate buffers
 real_A_buffer = ReplayBuffer() 
