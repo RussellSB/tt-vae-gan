@@ -7,7 +7,7 @@ The ultimate scope of this project is to achieve replicable results, as well as 
 
 ## Tutorial (TO EXPAND ON)
 1. First download the Flickr Audio Corpus Dataset
-2. Preprocess voice samples two speakers using the implemented melspectrogram methodology of WavenNet
+2. Preprocess voice samples of the two speakers of interest using the implemented melspectrogram methodology of WaveNet
 3. In VAE-CYCLE-GAN, run preprocess.py with the path set as the preprocessing output of WAVENET-VOCODER
 4. Run training.py, and make any suitable changes in model.py to run within the current computational budget
 5. After training from VAE-CYCLE-GAN, run evaluate.py to infer style transfer on unseen melspectrograms
