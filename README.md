@@ -11,9 +11,20 @@ The ultimate scope of this project is to achieve replicable results, as well as 
 ## Showcase
 
 Albeit not at the same high quality as AlBadawy, it achieves interpretable conversions:
-![Voice conversion from Male to Female](https://github.com/RussellSB/vc-vae-cycle-gan/blob/main/images/a2b.png) ![Voice conversion from Female to Male](https://github.com/RussellSB/vc-vae-cycle-gan/blob/main/images/b2a.png)
 
-*Left: Male to Female. As can be seen the formants become more distant expanding over a higher pitch range.  Right: Female to Male. Here, the formants get compressed to a lower pitch range. Note that for both of these results, Output is what is forward infered and Reconstructed is what is infered backwards from the generated output. This follows the logistics of CycleGAN (inferring fake samples cyclically). These result visualisations are what was best achieved to date - using an MSE adversarial loss.*
+Note that for below, Output is what is forward infered and Reconstructed input is what is infered backwards from the generated output. This follows the logistics of CycleGAN (inferring fake samples cyclically). These result visualisations are what was best achieved to date - using an MSE adversarial loss.
+
+- Male to Female. As can be seen the formants become more distant expanding over a higher pitch range. Reconstruction is achieved fairly well:
+
+    <p align="center">
+      <img width="660" height="400" src="https://github.com/RussellSB/vc-vae-cycle-gan/blob/main/images/a2b.png">
+    </p>
+
+- Female to Male. Here, the formants get compressed to a lower pitch range. Reconstruction appears to be more challenging than the previous example:
+
+    <p align="center">
+      <img width="660" height="400" src="https://github.com/RussellSB/vc-vae-cycle-gan/blob/main/images/b2a.png">
+    </p>
 
 ## Resources
 - [WaveNet Vocoder](https://github.com/r9y9/wavenet_vocoder)
