@@ -10,7 +10,7 @@ The ultimate scope of this project is to achieve replicable results, as well as 
 
 ## Showcase
 
-Albeit not at the same high quality as AlBadawy, it achieves interpretable conversions between a female and male speaker:
+Albeit not at the same high quality as AlBadawy, it achieves interpretable conversions:
 ![Voice conversion from Male to Female](https://github.com/RussellSB/vc-vae-cycle-gan/blob/main/images/a2b.png)
 ![Voice conversion from Female to Male](https://github.com/RussellSB/vc-vae-cycle-gan/blob/main/images/b2a.png)
 
