@@ -8,6 +8,13 @@ The current architecture only works with melspectrograms of a 128x128 size. Mels
 
 The ultimate scope of this project is to achieve replicable results, as well as also extend it to instrument timbre transfer for comparison purposes (voice conversion but in the context of instruments).
 
+## Showcase
+
+Albeit not at the same high quality as AlBadawy, output achieves interpretable conversions between a female and male speaker:
+![Voice conversion from Male to Female](https://github.com/RussellSB/vc-vae-cycle-gan/blob/main/images/a2b.png)
+![Voice conversion from Female to Male](https://github.com/RussellSB/vc-vae-cycle-gan/blob/main/images/b2a.png)
+
+*Left: Male to Female. As can be seen the formants become more distant expanding over a higher pitch range.  Right: Female to Male. Here, the formants get compressed to a lower pitch range. Note that for both of these results, Output is what is forward infered and Reconstructed is what is infered backwards from the generated output. This follows the logistics of CycleGAN (inferring fake samples cyclically). These result visualisations are what was best achieved to date - using an MSE adversarial loss.*
 
 ## Resources
 - [WaveNet Vocoder](https://github.com/r9y9/wavenet_vocoder)
