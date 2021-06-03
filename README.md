@@ -8,6 +8,13 @@ The current architecture only works with melspectrograms of a 128x128 size. Mels
 
 The ultimate scope of this project is to achieve replicable results, as well as also extend it to instrument timbre transfer for comparison purposes (voice conversion but in the context of instruments).
 
+
+## Resources
+- [WaveNet Vocoder](https://github.com/r9y9/wavenet_vocoder)
+- [UNIT Repository](https://github.com/mingyuliutw/UNIT)
+- [Flickr Audio Corpus Dataset](https://groups.csail.mit.edu/sls/downloads/flickraudio/)
+
+
 ## Brief Tutorial
 1. First download the Flickr Audio Corpus Dataset
 2. Preprocess voice samples of the two speakers of interest using the implemented melspectrogram methodology of WaveNet
@@ -33,8 +40,3 @@ python evaluate.py egs/gaussian/dump/lj/logmelspectrogram/norm/66_B2A/ \
 ```
 
 Here, 66_B2A is the directory of the generated melspectrograms from the Cycle-GAN (test input to WaveNet). Meanwhile 66_B2A_generated is the directory of the corresponding generated audio wave files (test output of wavenet). 
-
-## Resources
-- [WaveNet Vocoder](https://github.com/r9y9/wavenet_vocoder)
-- [UNIT Repository](https://github.com/mingyuliutw/UNIT)
-- [Flickr Audio Corpus Dataset](https://groups.csail.mit.edu/sls/downloads/flickraudio/)
