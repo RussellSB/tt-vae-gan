@@ -4,3 +4,12 @@ flickr_audio/
 .venv/
 *.ipynb
 .ipynb_checkpoints
+VAE-CYCLE-GAN/__pycache__/
+WAVENET/__pycache__/
+WAVENET/out/
+WAVENET/egs/data/
+WAVENET/egs/dump/
+WAVENET/egs/exp/
+WAVENET/egs/exp/generated/
+WAVENET/egs/exp/intermediate/
+WAVENET/egs/tensorboard/

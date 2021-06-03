@@ -1,6 +1,6 @@
 import torch
 device = 'cuda' # torch.device("cuda" if torch.cuda.is_available() else "cpu")
-torch.cuda.set_device(0)
+torch.cuda.set_device(1)
 
 import numpy as np
 from tqdm.auto import tqdm
@@ -15,7 +15,7 @@ import librosa
 import os
 
 # Prepares result output
-n = '67' # Moar residual blocks, but with BCE  for adv loss
+n = '69' # Moar residual blocks, but with BCE  for adv loss
 print('Outputting to pool', n)
 pooldir = '../pool/' + str(n)
 adir = pooldir + '/a'
@@ -42,7 +42,7 @@ assert max_duplets % batch_size == 0, 'Max sample pairs must be divisible by bat
 # OBJECTIVEn
 loss_mode = 'bce'  # set to 'bce' or 'mse' or 'ws'
 isWass = True # either true or false to make a wGAN (negates loss_mode when True)
-clip_value = 0.01 # lower and upper clip value for discriminator weights (used when isWass is True)
+clip_value = 0.0001 # lower and upper clip value for discriminator weights (used when isWass is True)
 
 # Loss weighting
 lambda_cycle = 1 #100.0 # 100.0 
