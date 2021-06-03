@@ -5,7 +5,7 @@ The current architecture only works with melspectrograms of a 128x128 size. Mels
 
 The ultimate scope of this project is to achieve replicable results, as well as also extend it to instrument timbre transfer for comparison purposes (voice conversion but in the context of instruments).
 
-## Tutorial (WIP)
+## Tutorial (TO EXPAND ON)
 1. First download the Flickr Audio Corpus Dataset
 2. Preprocess voice samples two speakers using the implemented melspectrogram methodology of WavenNet
 3. In VAE-CYCLE-GAN, run preprocess.py with the path set as the preprocessing output of WAVENET-VOCODER
