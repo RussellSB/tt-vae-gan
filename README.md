@@ -1,22 +1,37 @@
 # vc-vae-cycle-gan (Work in Progress)
 A neural style transfer model for speech, able to transfer the voice of one speaker to the voice of another (vc for voice conversion). This implementation is based on [Ehab A. AlBadawy's work](https://ebadawy.github.io/post/speech_style_transfer/).
 
-Due to deadlines, this repo isn't in the most representable of states right now - but the model learns! Error rates do minimise with time. For better learning consider training with more epochs than 100, or simply adding more consequetive residual necks in the encoder in model.py files. This was not done due to resource limitations from my end. Nonetheless, please refer to my code in VAE-CYCLE-GAN. Feel free to use the architecture from model.py and refer to training.py for forward inference and loss definitions. 
+The current architecture only works with melspectrograms of a 128x128 size. Melspectrogram parameters are the same as that of the paper. Updates for user-friendliness and adabtability to come in the future. Results are currently best with using an MSE advarserial loss, and they aren't yet as great as the paper's results but are interpretable, and are currently in the process of improvement. 
 
-The current architecture only works with melspectrograms of a 128x128 size. Melspectrogram parameters are the same as that of the paper. Updates for user-friendliness and adabtability to come in the future.
+The ultimate scope of this project is to achieve replicable results, as well as also extend it to instrument timbre transfer for comparison purposes (voice conversion but in the context of instruments).
 
-## TODO IMP
-- Add extra resblocks to encoder. Include data loader to not consume so much GPU RAM.
+## Tutorial (WIP)
+1. First download the Flickr Audio Corpus Dataset
+2. Preprocess voice samples two speakers using the implemented melspectrogram methodology of WavenNet
+3. In VAE-CYCLE-GAN, run preprocess.py with the path set as the preprocessing output of WAVENET-VOCODER
+4. Run training.py, and make any suitable changes in model.py to run within the current computational budget
+5. After training from VAE-CYCLE-GAN, run evaluate.py to infer style transfer on unseen melspectrograms
+6. Ensure that WAVENET-VOCODER is trained on the same training set as VAE-CYCLE-GAN (May follow its respective repo for this)
+7. After this, from WAVENET-VOCODER run evaluate.py to infer audio from the generated melspectrograms
 
-## TODO
-- Fork WaveNet repo and commit changes
-- Organise preprocessing stage for easy replication
-- Organise test/evaluation stage for easy replication
-- Link dataset
-- Update readme with setup tutorial
-
-## NOTES
-- VAE loss without unit variance versions are in its own sperate scripts for now (_logvar)
-- Can choose either 'bce', 'mse', or Wasserstenian mode for adversarial loss
+## Further Notes
+- Can choose either 'bce', 'mse', or Wasserstenian mode for adversarial loss (currently mse is best)
+- In order to better fit a limited computational budget, can reduce number of residual blocks at the bottleneck in model.py
 - Discriminator will use sigmoid at end only if BCE (like DCGAN)
-- No fancy data loader is used for now, data is loaded as a list of images
+- No data loader is used for now, data is loaded as a list of images with pickle
+- Following WAVENET-VOCODER should be generally sufficient, in this project their gaussian egs experiment was relied on.
+- Parameters for preprocessing melspectrograms were modified in gaussian wrt AlBadawy's work
+- There is an issue with synthesis.py in WAVENET-VOCODER, instead you must use their evaluate.py in the following way:
+
+```
+python evaluate.py egs/gaussian/dump/lj/logmelspectrogram/norm/66_B2A/ \
+    egs/gaussian/exp/lj_train_no_dev_main/checkpoint_step000349495.pth \
+    out/66_B2A_generated 
+```
+
+Here, 66_B2A is the directory of the generated melspectrograms from the Cycle-GAN (test input to WaveNet). Meanwhile 66_B2A_generated is the directory of the corresponding generated audio wave files (test output of wavenet). 
+
+## Resources
+- [WaveNet Vocoder](https://github.com/r9y9/wavenet_vocoder)
+- [UNIT Repository](https://github.com/mingyuliutw/UNIT)
+- [Flickr Audio Corpus Dataset](https://groups.csail.mit.edu/sls/downloads/flickraudio/)
