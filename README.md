@@ -1,4 +1,7 @@
 # vc-vae-cycle-gan (Work in Progress)
+
+![Architecture](https://github.com/RussellSB/vc-vae-cycle-gan/blob/main/images/VC-VAE-CYCLE-GAN.JPG)
+
 A neural style transfer model for speech, able to transfer the voice of one speaker to the voice of another (vc for voice conversion). This implementation is based on [Ehab A. AlBadawy's work](https://ebadawy.github.io/post/speech_style_transfer/).
 
 The current architecture only works with melspectrograms of a 128x128 size. Melspectrogram parameters are the same as that of the paper. Updates for user-friendliness and adabtability to come in the future. Results are currently best with using an MSE advarserial loss, and they aren't yet as great as the paper's results but are interpretable, and are currently in the process of improvement. 
