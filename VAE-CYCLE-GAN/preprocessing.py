@@ -5,7 +5,8 @@ from io import StringIO
 import os
 
 # Path of preprocessed wavenet spectrograms. Formats into pickle to load at once by this project
-path = '../WAVENET/egs/gaussian/dump/lj/logmelspectrogram/norm/train_no_dev/'
+typ= 'org' # 'norm'
+path = '../WAVENET-VOCODER/egs/gaussian/dump/lj/logmelspectrogram/'+typ+'/train_no_dev/'
 
 def cont_wn_to_arr(speaker):
     melset = []
@@ -31,5 +32,5 @@ wavmels = np.genfromtxt(path+'train.txt', dtype=[('wav','S50'),('mel','S50'),('n
 melset_7_cont_wn = cont_wn_to_arr('7')
 melset_4_cont_wn = cont_wn_to_arr('4')
 
-save_pickle(melset_7_cont_wn, '../pool/melset_7_128_cont_wn.pickle')
-save_pickle(melset_4_cont_wn, '../pool/melset_4_128_cont_wn.pickle')
+save_pickle(melset_7_cont_wn, '../pool/melset_7_128_cont_wn_org.pickle')
+save_pickle(melset_4_cont_wn, '../pool/melset_4_128_cont_wn_org.pickle')
