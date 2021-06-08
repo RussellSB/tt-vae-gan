@@ -1,5 +1,5 @@
 # id for reference
-n = '75'  # Experiment number
+n = '73'  # Experiment number
 g = 1  # Graphics card number
 
 # Hyperparameters
