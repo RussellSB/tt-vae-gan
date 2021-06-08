@@ -1,9 +1,10 @@
 # id for reference
-n = '65'  # Experiment number
+n = '75'  # Experiment number
+g = 1  # Graphics card number
 
 # Hyperparameters
-curr_epoch = 100
-max_epochs = 200
+curr_epoch = 0
+max_epochs = 100
 max_duplets = 1680 
 batch_size = 8 # 4
 learning_rate = 0.0001

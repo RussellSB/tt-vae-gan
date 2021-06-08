@@ -1,7 +1,3 @@
-import torch
-device = 'cuda' # torch.device("cuda" if torch.cuda.is_available() else "cpu")
-torch.cuda.set_device(0)
-
 import numpy as np
 from tqdm.auto import tqdm
 import itertools
@@ -10,6 +6,10 @@ from utils import load_pickle, save_pickle, ReplayBuffer, weights_init, show_mel
 from models import Encoder, ResGen, Generator, Discriminator
 from hparams import *
 import shutil
+
+import torch
+device = 'cuda' # torch.device("cuda" if torch.cuda.is_available() else "cpu")
+torch.cuda.set_device(g)
 
 from matplotlib import pyplot as plt
 import librosa
@@ -23,7 +23,6 @@ bdir = pooldir + '/b'  # creates training debug folder for A2B
 
 # If folder doesn't exist make it
 if not os.path.exists(pooldir): 
-    print('making', pooldir)
     os.mkdir(pooldir)
 else: 
     print("Warning: Outputing to an existing experiment pool!", n)
