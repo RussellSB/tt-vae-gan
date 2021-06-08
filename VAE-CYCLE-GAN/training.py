@@ -8,48 +8,29 @@ import itertools
 
 from utils import load_pickle, save_pickle, ReplayBuffer, weights_init, show_mel, show_mel_transfer
 from models import Encoder, ResGen, Generator, Discriminator
+from hparams import *
+import shutil
 
 from matplotlib import pyplot as plt
 import librosa
-
 import os
 
-# Prepares result output
-n = '71'
+# Preparing directories and proof checking logic of hyperparameters (from hparams.py)
 print('Outputting to pool', n)
 pooldir = '../pool/' + str(n)
-adir = pooldir + '/a'
-bdir = pooldir + '/b'
+shutil.copy('hparams.py', pooldir)  # backs up hyperparameters for reference
+adir = pooldir + '/a'  # creates training debug folder for B2A
+bdir = pooldir + '/b'  # creates training debug folder for A2B
 
 # If folder doesn't exist make it
-if not os.path.exists(pooldir):
-    os.mkdir(pooldir)
-else:
-    print("Warning: Outputing to an existing experiment pool!", n)
+if not os.path.exists(pooldir): os.mkdir(pooldir)
+else: print("Warning: Outputing to an existing experiment pool!", n)
     
-if not os.path.exists(adir):
-    os.mkdir(adir)
-if not os.path.exists(bdir):
-    os.mkdir(bdir)
+if not os.path.exists(adir): os.mkdir(adir)
+if not os.path.exists(bdir): os.mkdir(bdir)
 
-# Hyperparameters
-max_epochs = 100
-max_duplets = 1680 
-batch_size = 8 # 4
-learning_rate = 0.0001
+# Checks that number of unpaired duplets are divisible by the batch size
 assert max_duplets % batch_size == 0, 'Max sample pairs must be divisible by batch size!' 
-
-# OBJECTIVEn
-loss_mode = 'mse'  # set to 'bce' or 'mse' or 'ws'
-isWass = False # either true or false to make a wGAN (negates loss_mode when True)
-clip_value = 0.0001 # lower and upper clip value for discriminator weights (used when isWass is True)
-
-# Loss weighting
-lambda_cycle = 100.0 # 100.0 
-lambda_enc = 100.0 # 100.0 
-lambda_dec = 10.0 #10.0 # 10.0 # 1.0
-lambda_kld = 0.0001
-lambda_latent = 10.0 # 10.0
 
 # Loading training data
 melset_7_128 = load_pickle('../pool/melset_7_128_cont_wn.pickle') 
@@ -73,22 +54,22 @@ dec_B2A = Generator().to(device)  # Generator and Discriminator for Speaker B to
 disc_A = Discriminator(loss_mode).to(device)
 
 # Initialise weights
-enc.apply(weights_init) 
-res.apply(weights_init)  
-dec_A2B.apply(weights_init)
-dec_B2A.apply(weights_init)
-disc_A.apply(weights_init)
-disc_B.apply(weights_init)
-curr_epoch = 0
-
+# enc.apply(weights_init) 
+# res.apply(weights_init)  
+# dec_A2B.apply(weights_init)
+# dec_B2A.apply(weights_init)
+# disc_A.apply(weights_init)
+# disc_B.apply(weights_init)
+# curr_epoch = 0
+#
 # OR LOAD PREV WEIGHTS
-# enc.load_state_dict(torch.load(pooldir+'/enc.pt')) 
-# res.load_state_dict(torch.load(pooldir+'/res.pt')) 
-# dec_A2B.load_state_dict(torch.load(pooldir+'/dec_A2B.pt'))
-# dec_B2A.load_state_dict(torch.load(pooldir+'/dec_B2A.pt'))
-# disc_A.load_state_dict(torch.load(pooldir+'/disc_A.pt'))
-# disc_B.load_state_dict(torch.load(pooldir+'/disc_B.pt'))
-# curr_epoch = 63
+enc.load_state_dict(torch.load(pooldir+'/enc.pt')) 
+res.load_state_dict(torch.load(pooldir+'/res.pt')) 
+dec_A2B.load_state_dict(torch.load(pooldir+'/dec_A2B.pt'))
+dec_B2A.load_state_dict(torch.load(pooldir+'/dec_B2A.pt'))
+disc_A.load_state_dict(torch.load(pooldir+'/disc_A.pt'))
+disc_B.load_state_dict(torch.load(pooldir+'/disc_B.pt'))
+curr_epoch = 99
 
 # Instantiate buffers
 real_A_buffer = ReplayBuffer() 
