@@ -54,8 +54,8 @@ class Encoder(nn.Module):
         self.res5 = ResidualBlock(1024)
         self.res5_2 = ResidualBlock(1024)
         self.res5_3 = ResidualBlock(1024)
-        self.res5_4 = ResidualBlock(1024)
-        self.res5_5 = ResidualBlock(1024)
+        #self.res5_4 = ResidualBlock(1024)
+        #self.res5_5 = ResidualBlock(1024)
 
         # Fully connected bottleneck
         self.fc6 = nn.Linear(1024, 512)
@@ -77,8 +77,8 @@ class Encoder(nn.Module):
         x = self.res5(x)
         x = self.res5_2(x)
         x = self.res5_3(x)
-        x = self.res5_4(x)
-        x = self.res5_5(x)
+        #x = self.res5_4(x)
+        #x = self.res5_5(x)
         
         # Bottleneck
         x = self.fc6(x.view(-1, 1024)) 
@@ -114,8 +114,8 @@ class Generator(nn.Module):
         # The first res block is shared
         self.res1_2 = ResidualBlock(1024)
         self.res1_3 = ResidualBlock(1024)
-        self.res1_4 = ResidualBlock(1024)
-        self.res1_5 = ResidualBlock(1024)
+        #self.res1_4 = ResidualBlock(1024)
+        #self.res1_5 = ResidualBlock(1024)
         
         self.conv2 = nn.Sequential(
             nn.ConvTranspose2d(1024, 512, kernel_size=4, stride=2),
@@ -140,8 +140,8 @@ class Generator(nn.Module):
     def forward(self, x):
         x = self.res1_2(x)
         x = self.res1_3(x)
-        x = self.res1_4(x)
-        x = self.res1_5(x)
+        #x = self.res1_4(x)
+        #x = self.res1_5(x)
         x = self.conv2(x)
         x = self.conv3(x) 
         x = self.conv4(x) 

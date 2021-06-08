@@ -15,19 +15,25 @@ from matplotlib import pyplot as plt
 import librosa
 import os
 
-# Preparing directories and proof checking logic of hyperparameters (from hparams.py)
+# Preparing directories
 print('Outputting to pool', n)
-pooldir = '../pool/' + str(n)
-shutil.copy('hparams.py', pooldir)  # backs up hyperparameters for reference
+pooldir = '../pool/' + str(n) 
 adir = pooldir + '/a'  # creates training debug folder for B2A
 bdir = pooldir + '/b'  # creates training debug folder for A2B
 
 # If folder doesn't exist make it
-if not os.path.exists(pooldir): os.mkdir(pooldir)
-else: print("Warning: Outputing to an existing experiment pool!", n)
+if not os.path.exists(pooldir): 
+    print('making', pooldir)
+    os.mkdir(pooldir)
+else: 
+    print("Warning: Outputing to an existing experiment pool!", n)
     
-if not os.path.exists(adir): os.mkdir(adir)
-if not os.path.exists(bdir): os.mkdir(bdir)
+if not os.path.exists(adir): 
+    os.mkdir(adir)
+if not os.path.exists(bdir): 
+    os.mkdir(bdir)
+    
+shutil.copy('hparams.py', pooldir)  # backs up hyperparameters for reference (from hparams.py)
 
 # Checks that number of unpaired duplets are divisible by the batch size
 assert max_duplets % batch_size == 0, 'Max sample pairs must be divisible by batch size!' 
@@ -54,22 +60,20 @@ dec_B2A = Generator().to(device)  # Generator and Discriminator for Speaker B to
 disc_A = Discriminator(loss_mode).to(device)
 
 # Initialise weights
-# enc.apply(weights_init) 
-# res.apply(weights_init)  
-# dec_A2B.apply(weights_init)
-# dec_B2A.apply(weights_init)
-# disc_A.apply(weights_init)
-# disc_B.apply(weights_init)
-# curr_epoch = 0
-#
-# OR LOAD PREV WEIGHTS
-enc.load_state_dict(torch.load(pooldir+'/enc.pt')) 
-res.load_state_dict(torch.load(pooldir+'/res.pt')) 
-dec_A2B.load_state_dict(torch.load(pooldir+'/dec_A2B.pt'))
-dec_B2A.load_state_dict(torch.load(pooldir+'/dec_B2A.pt'))
-disc_A.load_state_dict(torch.load(pooldir+'/disc_A.pt'))
-disc_B.load_state_dict(torch.load(pooldir+'/disc_B.pt'))
-curr_epoch = 99
+if curr_epoch == 0:
+    enc.apply(weights_init) 
+    res.apply(weights_init)  
+    dec_A2B.apply(weights_init)
+    dec_B2A.apply(weights_init)
+    disc_A.apply(weights_init)
+    disc_B.apply(weights_init)
+else:  # Load previous weights for when curr epochs are more than zero, 
+    enc.load_state_dict(torch.load(pooldir+'/enc.pt')) 
+    res.load_state_dict(torch.load(pooldir+'/res.pt')) 
+    dec_A2B.load_state_dict(torch.load(pooldir+'/dec_A2B.pt'))
+    dec_B2A.load_state_dict(torch.load(pooldir+'/dec_B2A.pt'))
+    disc_A.load_state_dict(torch.load(pooldir+'/disc_A.pt'))
+    disc_B.load_state_dict(torch.load(pooldir+'/disc_B.pt'))    
 
 # Instantiate buffers
 real_A_buffer = ReplayBuffer() 

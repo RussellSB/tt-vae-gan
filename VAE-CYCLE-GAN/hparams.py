@@ -1,7 +1,8 @@
 # id for reference
-n = '73'  # Experiment number
+n = '65'  # Experiment number
 
 # Hyperparameters
+curr_epoch = 100
 max_epochs = 200
 max_duplets = 1680 
 batch_size = 8 # 4
