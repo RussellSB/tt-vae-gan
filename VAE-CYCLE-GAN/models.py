@@ -3,24 +3,46 @@ import torch.nn as nn
 from torch.autograd import Variable
 import numpy as np
 
+# Basic Residual Block
 class ResidualBlock(nn.Module):
     def __init__(self, dim_in):
         super(ResidualBlock, self).__init__()
         self.conv1 = nn.Sequential(
-            nn.ZeroPad2d(2), #ReflectionPad2d(2),
+            nn.ReflectionPad2d(2), 
             nn.Conv2d(dim_in, dim_in, kernel_size=4),
-            nn.InstanceNorm2d(dim_in), #BatchNorm2d(dim_in),
+            nn.BatchNorm2d(dim_in), 
             nn.LeakyReLU(0.2, inplace=True))
         
         self.conv2 = nn.Sequential(
-            nn.ZeroPad2d(1), #ReflectionPad2d(1),
+            nn.ReflectionPad2d(1),
             nn.Conv2d(dim_in, dim_in, kernel_size=4),
-            nn.InstanceNorm2d(dim_in)) #BatchNorm2d(dim_in))
+            nn.BatchNorm2d(dim_in)) 
 
     def forward(self, x):
         y = self.conv1(x)
         y = self.conv2(y)
         return x + y
+    
+
+# Experimental (trying resbottlenecks instead of basic resblock)
+# class ResBottleNeck(nn.Module):
+#     def __init__(self, dim_in):
+#         super(ResidualBlock, self).__init__()
+#         self.conv1 = nn.Sequential(
+#             nn.ZeroPad2d(2), #ReflectionPad2d(2),
+#             nn.Conv2d(dim_in, dim_in, kernel_size=4),
+#             nn.InstanceNorm2d(dim_in), #BatchNorm2d(dim_in),
+#             nn.LeakyReLU(0.2, inplace=True))
+        
+#         self.conv2 = nn.Sequential(
+#             nn.ZeroPad2d(1), #ReflectionPad2d(1),
+#             nn.Conv2d(dim_in, dim_in, kernel_size=4),
+#             nn.InstanceNorm2d(dim_in)) #BatchNorm2d(dim_in))
+
+#     def forward(self, x):
+#         y = self.conv1(x)
+#         y = self.conv2(y)
+#         return x + y
 
 
 class Encoder(nn.Module):

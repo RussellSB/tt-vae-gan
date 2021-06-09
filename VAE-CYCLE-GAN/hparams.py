@@ -1,6 +1,6 @@
 # id for reference
-n = '73'  # Experiment number
-g = 1  # Graphics card number
+n = '76'  # Experiment number (residual bottlenecks)
+g = 0  # Graphics card number
 
 # Hyperparameters
 curr_epoch = 0
