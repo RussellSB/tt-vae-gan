@@ -1,5 +1,5 @@
 # id for reference
-n = '78'  # Experiment number (residual bottlenecks improved)
+n = '78'  # Residual bottleneck fixed, with dimensional difference (stride=1 for conv 3x3 layer)
 g = 1  # Graphics card number
 
 # Training settings

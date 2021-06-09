@@ -18,11 +18,16 @@ class ResidualBlock(nn.Module):
             nn.ReflectionPad2d(1),
             nn.Conv2d(dim_in, dim_in, kernel_size=3),
             nn.BatchNorm2d(dim_in)) 
+        
+        self.final_activ = nn.LeakyReLU(0.2, inplace=True)
 
     def forward(self, x):
-        y = self.conv1(x)
-        y = self.conv2(y)
-        return x + y
+        identity = x
+        out = self.conv1(x)
+        out = self.conv2(out)
+        out += identity  # skip connection
+        out = self.final_activ(out)
+        return out
     
 
 # Experimental (trying resbottlenecks instead of basic resblock)
@@ -52,22 +57,29 @@ class ResidualBottleneck(nn.Module):
             nn.Conv2d(dim_min, dim_out, kernel_size=1),
             nn.BatchNorm2d(dim_out))
         
+        self.final_activ = nn.LeakyReLU(0.2, inplace=True)
+        
 #         self.downsample = nn.Sequential(
 #             nn.Conv2d(self.in_channels, dim_out, kernel_size=1, stride=stride),
 #             nn.BatchNorm2d(planes*ResBlock.expansion)
 #         )
 
     def forward(self, x):
-        print('=============')
-        print('input', x.shape)
-        y = self.conv1(x)
-        print('res conv 1', y.shape)
-        y = self.conv2(y)
-        print('res conv 2', y.shape)
-        y = self.conv3(y)
-        print('res conv 3', y.shape)
-        print('=============')
-        return x + y
+#         print('=============')
+#         print('input', x.shape)
+        identity = x
+
+        out = self.conv1(x)
+#         print('res conv 1', out.shape)
+        out = self.conv2(out)
+#         print('res conv 2', out.shape)
+        out = self.conv3(out)
+#         print('res conv 3', out.shape)
+#         print('=============')
+        
+        out += identity  # skip connection
+        out = self.final_activ(out)
+        return out
 
 
 class Encoder(nn.Module):
