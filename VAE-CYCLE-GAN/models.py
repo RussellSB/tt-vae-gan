@@ -7,6 +7,7 @@ import numpy as np
 class ResidualBlock(nn.Module):
     def __init__(self, dim_in):
         super(ResidualBlock, self).__init__()
+        
         self.conv1 = nn.Sequential(
             nn.ReflectionPad2d(1), 
             nn.Conv2d(dim_in, dim_in, kernel_size=3),
@@ -20,31 +21,40 @@ class ResidualBlock(nn.Module):
 
     def forward(self, x):
         y = self.conv1(x)
-        #print('res conv 1', y.shape)
         y = self.conv2(y)
-        #print('res conv 2', y.shape)
         return x + y
     
 
 # Experimental (trying resbottlenecks instead of basic resblock)
-# class ResBottleNeck(nn.Module):
-#     def __init__(self, dim_in):
-#         super(ResidualBlock, self).__init__()
-#         self.conv1 = nn.Sequential(
-#             nn.ZeroPad2d(2), #ReflectionPad2d(2),
-#             nn.Conv2d(dim_in, dim_in, kernel_size=4),
-#             nn.InstanceNorm2d(dim_in), #BatchNorm2d(dim_in),
-#             nn.LeakyReLU(0.2, inplace=True))
+# adapted from (https://github.com/JayPatwardhan/ResNet-PyTorch/blob/master/ResNet/ResNet.py)
+class ResidualBottleneck(nn.Module):
+    def __init__(self, dim_in):
+        super(ResidualBottleneck, self).__init__()
         
-#         self.conv2 = nn.Sequential(
-#             nn.ZeroPad2d(1), #ReflectionPad2d(1),
-#             nn.Conv2d(dim_in, dim_in, kernel_size=4),
-#             nn.InstanceNorm2d(dim_in)) #BatchNorm2d(dim_in))
+        self.conv1 = nn.Sequential(
+            nn.Conv2d(dim_in, dim_in, kernel_size=1),
+            nn.BatchNorm2d(dim_in), 
+            nn.LeakyReLU(0.2, inplace=True))
+        
+        self.conv2 = nn.Sequential(
+            nn.ReflectionPad2d(1), 
+            nn.Conv2d(dim_in, dim_in, kernel_size=3),
+            nn.BatchNorm2d(dim_in), 
+            nn.LeakyReLU(0.2, inplace=True))
+        
+        self.conv3 = nn.Sequential(
+            nn.Conv2d(dim_in, dim_in, kernel_size=1),
+            nn.BatchNorm2d(dim_in))
 
-#     def forward(self, x):
-#         y = self.conv1(x)
-#         y = self.conv2(y)
-#         return x + y
+    def forward(self, x):
+        #print('res in', x.shape)
+        y = self.conv1(x)
+        #print('res conv 1', y.shape)
+        y = self.conv2(y)
+        #print('res conv 2', y.shape)
+        y = self.conv3(y)
+        #print('res conv 3', y.shape)
+        return x + y
 
 
 class Encoder(nn.Module):
@@ -75,11 +85,11 @@ class Encoder(nn.Module):
             nn.LeakyReLU(0.2, inplace=True))
 
         # Skip connection to bottleneck
-        self.res5 = ResidualBlock(1024)
-        self.res5_2 = ResidualBlock(1024)
-        self.res5_3 = ResidualBlock(1024)
-        self.res5_4 = ResidualBlock(1024)
-        self.res5_5 = ResidualBlock(1024)
+        self.res5 = ResidualBottleneck(1024)
+        self.res5_2 = ResidualBottleneck(1024)
+        self.res5_3 = ResidualBottleneck(1024)
+        self.res5_4 = ResidualBottleneck(1024)
+        self.res5_5 = ResidualBottleneck(1024)
 
         # Fully connected bottleneck
         self.fc6 = nn.Linear(1024, 512)
@@ -124,7 +134,7 @@ class ResGen(nn.Module):
         self.fc2 = nn.Linear(512, 1024)
         
         # Skip connections
-        self.res1 = ResidualBlock(1024)
+        self.res1 = ResidualBottleneck(1024)
         
     def forward(self, x):
         x = self.fc1(x) 
@@ -138,10 +148,10 @@ class Generator(nn.Module):
         super(Generator, self).__init__()
         
         # The first res block is shared
-        self.res1_2 = ResidualBlock(1024)
-        self.res1_3 = ResidualBlock(1024)
-        self.res1_4 = ResidualBlock(1024)
-        self.res1_5 = ResidualBlock(1024)
+        self.res1_2 = ResidualBottleneck(1024)
+        self.res1_3 = ResidualBottleneck(1024)
+        self.res1_4 = ResidualBottleneck(1024)
+        self.res1_5 = ResidualBottleneck(1024)
         
         self.conv2 = nn.Sequential(
             nn.ConvTranspose2d(1024, 512, kernel_size=4, stride=2),

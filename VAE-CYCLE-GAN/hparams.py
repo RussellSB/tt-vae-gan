@@ -1,20 +1,20 @@
 # id for reference
-n = '76'  # Experiment number (residual bottlenecks)
-g = 0  # Graphics card number
+n = '77'  # Experiment number (residual bottlenecks)
+g = 1  # Graphics card number
 
-# Hyperparameters
+# Training settings
 curr_epoch = 0
 max_epochs = 100
 max_duplets = 1680 
 batch_size = 8 # 4
 learning_rate = 0.0001
 
-# OBJECTIVE
+# Adversarial loss function
 loss_mode = 'mse'  # set to 'bce' or 'mse' or 'ws'
 isWass = False # either true or false to make a wGAN (negates loss_mode when True)
 clip_value = 0.0001 # lower and upper clip value for discriminator weights (used when isWass is True)
 
-# Loss weighting
+# Loss function weighting 
 lambda_cycle = 100.0 # 100.0 
 lambda_enc = 100.0 # 100.0 
 lambda_dec = 10.0 #10.0 # 10.0 # 1.0
