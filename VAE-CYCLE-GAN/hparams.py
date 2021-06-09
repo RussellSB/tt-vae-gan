@@ -1,5 +1,5 @@
 # id for reference
-n = '77'  # Experiment number (residual bottlenecks)
+n = '78'  # Experiment number (residual bottlenecks improved)
 g = 1  # Graphics card number
 
 # Training settings

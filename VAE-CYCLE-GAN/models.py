@@ -31,29 +31,42 @@ class ResidualBottleneck(nn.Module):
     def __init__(self, dim_in):
         super(ResidualBottleneck, self).__init__()
         
+        expansion = 4
+        dim_min = dim_in // expansion
+        dim_out = dim_min * expansion
+        
+        stride = 1  # stride for downsampling
+        
         self.conv1 = nn.Sequential(
-            nn.Conv2d(dim_in, dim_in, kernel_size=1),
-            nn.BatchNorm2d(dim_in), 
+            nn.Conv2d(dim_in, dim_min, kernel_size=1),
+            nn.BatchNorm2d(dim_min), 
             nn.LeakyReLU(0.2, inplace=True))
         
         self.conv2 = nn.Sequential(
             nn.ReflectionPad2d(1), 
-            nn.Conv2d(dim_in, dim_in, kernel_size=3),
-            nn.BatchNorm2d(dim_in), 
+            nn.Conv2d(dim_min, dim_min, kernel_size=3, stride=stride),
+            nn.BatchNorm2d(dim_min), 
             nn.LeakyReLU(0.2, inplace=True))
         
         self.conv3 = nn.Sequential(
-            nn.Conv2d(dim_in, dim_in, kernel_size=1),
-            nn.BatchNorm2d(dim_in))
+            nn.Conv2d(dim_min, dim_out, kernel_size=1),
+            nn.BatchNorm2d(dim_out))
+        
+#         self.downsample = nn.Sequential(
+#             nn.Conv2d(self.in_channels, dim_out, kernel_size=1, stride=stride),
+#             nn.BatchNorm2d(planes*ResBlock.expansion)
+#         )
 
     def forward(self, x):
-        #print('res in', x.shape)
+        print('=============')
+        print('input', x.shape)
         y = self.conv1(x)
-        #print('res conv 1', y.shape)
+        print('res conv 1', y.shape)
         y = self.conv2(y)
-        #print('res conv 2', y.shape)
+        print('res conv 2', y.shape)
         y = self.conv3(y)
-        #print('res conv 3', y.shape)
+        print('res conv 3', y.shape)
+        print('=============')
         return x + y
 
 
@@ -108,9 +121,7 @@ class Encoder(nn.Module):
         x = self.conv2(x)      
         x = self.conv3(x)   
         x = self.conv4(x)
-        #print('res in', x.shape)
         x = self.res5(x)
-        #print('res out', x.shape)
         x = self.res5_2(x)
         x = self.res5_3(x)
         x = self.res5_4(x)
