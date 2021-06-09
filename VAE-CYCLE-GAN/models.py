@@ -8,19 +8,21 @@ class ResidualBlock(nn.Module):
     def __init__(self, dim_in):
         super(ResidualBlock, self).__init__()
         self.conv1 = nn.Sequential(
-            nn.ReflectionPad2d(2), 
-            nn.Conv2d(dim_in, dim_in, kernel_size=4),
+            nn.ReflectionPad2d(1), 
+            nn.Conv2d(dim_in, dim_in, kernel_size=3),
             nn.BatchNorm2d(dim_in), 
             nn.LeakyReLU(0.2, inplace=True))
         
         self.conv2 = nn.Sequential(
             nn.ReflectionPad2d(1),
-            nn.Conv2d(dim_in, dim_in, kernel_size=4),
+            nn.Conv2d(dim_in, dim_in, kernel_size=3),
             nn.BatchNorm2d(dim_in)) 
 
     def forward(self, x):
         y = self.conv1(x)
+        #print('res conv 1', y.shape)
         y = self.conv2(y)
+        #print('res conv 2', y.shape)
         return x + y
     
 
@@ -96,7 +98,9 @@ class Encoder(nn.Module):
         x = self.conv2(x)      
         x = self.conv3(x)   
         x = self.conv4(x)
+        #print('res in', x.shape)
         x = self.res5(x)
+        #print('res out', x.shape)
         x = self.res5_2(x)
         x = self.res5_3(x)
         x = self.res5_4(x)
@@ -172,7 +176,7 @@ class Generator(nn.Module):
 
 
 class Discriminator(nn.Module, ):
-    def __init__(self, loss_mode='bce'):
+    def __init__(self, loss_mode='mse'):
         super(Discriminator, self).__init__()
         self.loss_mode = loss_mode
         
