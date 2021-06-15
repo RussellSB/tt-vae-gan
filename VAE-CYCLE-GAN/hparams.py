@@ -1,5 +1,5 @@
 # id for reference
-n = '84'  # MOAR DROPOUT
+n = '86'  # Road to 50 res layers
 g = 0  # Graphics card number
 
 # Training settings
@@ -20,3 +20,6 @@ lambda_enc = 100.0 # 100.0
 lambda_dec = 10.0 #10.0 # 10.0 # 1.0
 lambda_kld = 0.0001
 lambda_latent = 10.0 # 10.0
+
+# Model architecture parameters
+num_res = 50  # number of resnet blocks for resnet phases (recommended minimum is 3)

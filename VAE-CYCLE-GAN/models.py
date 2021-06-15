@@ -3,6 +3,9 @@ import torch.nn as nn
 from torch.autograd import Variable
 import numpy as np
 
+from hparams import num_res
+assert num_res > 1, 'Need to have atleast more than one res block (recommended minimum 3)'
+
 # Basic Residual Block
 class ResidualBlock(nn.Module):
     def __init__(self, dim_in):
@@ -100,19 +103,17 @@ class Encoder(nn.Module):
             nn.Conv2d(256, 512, kernel_size=4, stride=2),
             nn.BatchNorm2d(512),
             nn.LeakyReLU(0.2, inplace=True))
-        
-                
+             
         self.conv4 =nn.Sequential(
             nn.Conv2d(512, 1024, kernel_size=4, stride=2),
             nn.BatchNorm2d(1024),
             nn.LeakyReLU(0.2, inplace=True))
 
-        # Skip connection to bottleneck
-        self.res5 = ResidualBottleneck(1024)
-        self.res5_2 = ResidualBottleneck(1024)
-        self.res5_3 = ResidualBottleneck(1024)
-        self.res5_4 = ResidualBottleneck(1024)
-        self.res5_5 = ResidualBottleneck(1024)
+        # Skip connections pre bottleneck
+        res_modules = []
+        for i in range(num_res):
+            res_modules.append(ResidualBottleneck(1024))
+        self.res5 = nn.Sequential(*res_modules)
 
         # Fully connected bottleneck
         self.fc6 = nn.Linear(1024, 512)
@@ -131,11 +132,9 @@ class Encoder(nn.Module):
         x = self.conv2(x)      
         x = self.conv3(x)   
         x = self.conv4(x)
+        
+        # Residual phase before main bottleneck
         x = self.res5(x)
-        x = self.res5_2(x)
-        x = self.res5_3(x)
-        x = self.res5_4(x)
-        x = self.res5_5(x)
         
         # Bottleneck
         x = self.fc6(x.view(-1, 1024)) 
@@ -168,11 +167,11 @@ class Generator(nn.Module):
     def __init__(self):
         super(Generator, self).__init__()
         
-        # The first res block is shared
-        self.res1_2 = ResidualBottleneck(1024)
-        self.res1_3 = ResidualBottleneck(1024)
-        self.res1_4 = ResidualBottleneck(1024)
-        self.res1_5 = ResidualBottleneck(1024)
+        # The first res block is shared so we do num_res - 1
+        res_modules = []
+        for i in range(num_res - 1):
+            res_modules.append(ResidualBottleneck(1024))
+        self.res1 = nn.Sequential(*res_modules)
         
         self.conv2 = nn.Sequential(
             nn.ConvTranspose2d(1024, 512, kernel_size=4, stride=2),
@@ -195,10 +194,7 @@ class Generator(nn.Module):
             nn.Tanh())  # wrt DCGAN 
         
     def forward(self, x):
-        x = self.res1_2(x)
-        x = self.res1_3(x)
-        x = self.res1_4(x)
-        x = self.res1_5(x)
+        x = self.res1(x)
         x = self.conv2(x)
         x = self.conv3(x) 
         x = self.conv4(x) 

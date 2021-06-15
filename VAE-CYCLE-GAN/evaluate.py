@@ -10,12 +10,12 @@ from models import Encoder, ResGen, Generator
 from io import StringIO
 import skimage.metrics
 
-g = '1'  # gpu setting
+g = '0'  # gpu setting
 device = torch.device('cuda')
 torch.cuda.set_device(int(g))
 map_location='cuda:'+g
 
-n = '83'  # experiment out pool
+n = '85'  # experiment out pool
 path = '../pool/'+n
 
 
