@@ -1,6 +1,6 @@
 # id for reference
-n = '78'  # Residual bottleneck fixed, with dimensional difference (stride=1 for conv 3x3 layer)
-g = 1  # Graphics card number
+n = '84'  # MOAR DROPOUT
+g = 0  # Graphics card number
 
 # Training settings
 curr_epoch = 0

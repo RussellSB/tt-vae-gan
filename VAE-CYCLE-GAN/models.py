@@ -12,7 +12,7 @@ class ResidualBlock(nn.Module):
             nn.ReflectionPad2d(1), 
             nn.Conv2d(dim_in, dim_in, kernel_size=3),
             nn.BatchNorm2d(dim_in), 
-            nn.LeakyReLU(0.2, inplace=True))
+            nn.ReLU(inplace=True))
         
         self.conv2 = nn.Sequential(
             nn.ReflectionPad2d(1),
@@ -21,11 +21,12 @@ class ResidualBlock(nn.Module):
         
         self.final_activ = nn.LeakyReLU(0.2, inplace=True)
 
+
     def forward(self, x):
         identity = x
         out = self.conv1(x)
         out = self.conv2(out)
-        out += identity  # skip connection
+        out += identity
         out = self.final_activ(out)
         return out
     
@@ -45,25 +46,21 @@ class ResidualBottleneck(nn.Module):
         self.conv1 = nn.Sequential(
             nn.Conv2d(dim_in, dim_min, kernel_size=1),
             nn.BatchNorm2d(dim_min), 
-            nn.LeakyReLU(0.2, inplace=True))
+            nn.ReLU(inplace=True))
         
         self.conv2 = nn.Sequential(
             nn.ReflectionPad2d(1), 
             nn.Conv2d(dim_min, dim_min, kernel_size=3, stride=stride),
             nn.BatchNorm2d(dim_min), 
-            nn.LeakyReLU(0.2, inplace=True))
+            nn.ReLU(inplace=True))
         
         self.conv3 = nn.Sequential(
             nn.Conv2d(dim_min, dim_out, kernel_size=1),
             nn.BatchNorm2d(dim_out))
         
-        self.final_activ = nn.LeakyReLU(0.2, inplace=True)
+        self.final_activ = nn.ReLU(inplace=True)
         
-#         self.downsample = nn.Sequential(
-#             nn.Conv2d(self.in_channels, dim_out, kernel_size=1, stride=stride),
-#             nn.BatchNorm2d(planes*ResBlock.expansion)
-#         )
-
+        
     def forward(self, x):
 #         print('=============')
 #         print('input', x.shape)
@@ -80,6 +77,7 @@ class ResidualBottleneck(nn.Module):
         out += identity  # skip connection
         out = self.final_activ(out)
         return out
+
 
 
 class Encoder(nn.Module):
@@ -217,28 +215,28 @@ class Discriminator(nn.Module, ):
             nn.Conv2d(1, 64, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(64),
             nn.LeakyReLU(0.2, inplace=True), 
-            nn.Dropout(0.3)  # only for experiment >50
+            nn.Dropout(0.5) 
         )
         
         self.conv2 = nn.Sequential(
             nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(128),
             nn.LeakyReLU(0.2, inplace=True), 
-            nn.Dropout(0.3)  # only for experiment >50
+            nn.Dropout(0.5) 
         )
         
         self.conv3 = nn.Sequential(
             nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(256),
             nn.LeakyReLU(0.2, inplace=True), 
-            nn.Dropout(0.3)  # only for experiment >50
+            nn.Dropout(0.5) 
         )
         
         self.conv4 = nn.Sequential(
             nn.Conv2d(256, 512, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(512),
             nn.LeakyReLU(0.2, inplace=True), 
-            nn.Dropout(0.3)  # only for experiment >50
+            nn.Dropout(0.5) 
         )
                 
         self.conv5 = nn.Sequential(nn.Conv2d(512, 1, kernel_size=8))

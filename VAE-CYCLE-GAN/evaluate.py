@@ -15,7 +15,7 @@ device = torch.device('cuda')
 torch.cuda.set_device(int(g))
 map_location='cuda:'+g
 
-n = '73'  # experiment out pool
+n = '83'  # experiment out pool
 path = '../pool/'+n
 
 
