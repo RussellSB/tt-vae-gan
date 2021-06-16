@@ -31,21 +31,29 @@ def show_mel(mel):
     plt.tight_layout()
 
 # Plots mels that are already amplitude scaled and saves
-def show_mel_transfer(mel_in, mel_recon, mel_out, save_path):
-    fig, ax = plt.subplots(nrows=1, ncols=3, sharex=True)
+def show_mel_transfer(mel_in, mel_recon, mel_out, mel_target, save_path):
+    fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(6, 6))
     
-    ax[0].imshow(np.rot90(mel_in), interpolation="None")
-    ax[0].set(title='Input')
-    ax[0].set_ylabel('Mels')
+    ax[0,0].imshow(np.rot90(mel_in), interpolation="None")
+    ax[0,0].set(title='Input')
+    ax[0,0].set_ylabel('Mels')
+    ax[0,0].axes.xaxis.set_ticks([])
+    ax[0,0].axes.xaxis.set_ticks([])
     
-    ax[1].imshow(np.rot90(mel_recon), interpolation="None")
-    ax[1].set(title='Reconstructed Input')
-    ax[1].axes.yaxis.set_ticks([])
+    ax[1,0].imshow(np.rot90(mel_recon), interpolation="None")
+    ax[1,0].set(title='Reconstructed Input')
+    ax[1,0].set_xlabel('Frames')
+    ax[1,0].set_ylabel('Mels')
 
-    ax[2].imshow(np.rot90(mel_out), interpolation="None")
-    ax[2].set(title='Output')
-    ax[2].set_xlabel('Frames')
-    ax[2].axes.yaxis.set_ticks([])
+    ax[0,1].imshow(np.rot90(mel_out), interpolation="None")
+    ax[0,1].set(title='Output')
+    ax[0,1].axes.yaxis.set_ticks([])
+    ax[0,1].axes.xaxis.set_ticks([])
+    
+    ax[1,1].imshow(np.rot90(mel_target), interpolation="None")
+    ax[1,1].set(title='Target')
+    ax[1,1].set_xlabel('Frames')
+    ax[1,1].axes.yaxis.set_ticks([])
 
     plt.savefig(save_path)
     plt.close()

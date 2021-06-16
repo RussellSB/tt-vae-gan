@@ -38,17 +38,17 @@ shutil.copy('hparams.py', pooldir)  # backs up hyperparameters for reference (fr
 assert max_duplets % batch_size == 0, 'Max sample pairs must be divisible by batch size!' 
 
 # Loading training data
-melset_7_128 = load_pickle('../pool/melset_7_128_cont_wn.pickle') 
-melset_4_128 = load_pickle('../pool/melset_4_128_cont_wn.pickle')
-print('Melset A size:', len(melset_7_128), 'Melset B size:', len(melset_4_128))
+melset_A_128 = load_pickle('../pool/melset_A_128_cont_wn.pickle') 
+melset_B_128 = load_pickle('../pool/melset_B_128_cont_wn.pickle')
+print('Melset A size:', len(melset_A_128), 'Melset B size:', len(melset_B_128))
 print('Max duplets:', max_duplets)
 
 # Shuffling melspectrograms
 rng = np.random.default_rng()
-melset_7_128 = rng.permutation(np.array(melset_7_128))
-melset_4_128 = rng.permutation(np.array(melset_4_128))
-melset_7_128 = torch.from_numpy(melset_7_128)  # Torch conversion
-melset_4_128 = torch.from_numpy(melset_4_128)
+melset_A_128 = rng.permutation(np.array(melset_A_128))
+melset_B_128 = rng.permutation(np.array(melset_B_128))
+melset_A_128 = torch.from_numpy(melset_A_128)  # Torch conversion
+melset_B_128 = torch.from_numpy(melset_B_128)
 
 # Model Instantiation
 enc = Encoder().to(device)  # Shared encoder model
@@ -144,12 +144,12 @@ for i in pbar:
     for j in pbar_sub:
         
         # Loading real samples from each speaker in batches
-        real_mel_A = melset_7_128[j : j + batch_size].to(device)
-        real_mel_B = melset_4_128[j : j + batch_size].to(device)
+        real_mel_A = melset_A_128[j : j + batch_size].to(device)
+        real_mel_B = melset_B_128[j : j + batch_size].to(device)
         
 	    # Testing that loss can firstly go down with same batch
-        #real_mel_A = melset_7_128[0 : batch_size].to(device)
-        #real_mel_B = melset_4_128[0 : batch_size].to(device)
+        #real_mel_A = melset_A_128[0 : batch_size].to(device)
+        #real_mel_B = melset_B_128[0 : batch_size].to(device)
         
         # Resizing to model tensors
         real_mel_A = real_mel_A.view(batch_size, 1, 128, 128)
@@ -274,14 +274,14 @@ for i in pbar:
         train_hist['disc_B'].append(errDisc_B.item())    
 
      # Save generator B2A output per epoch
-    d_in, d_recon, d_out = real_B_buffer.data[0], recon_B_buffer.data[0], fake_A_buffer.data[0]
-    mel_in, mel_recon, mel_out = torch.squeeze(d_in).cpu().numpy(), torch.squeeze(d_recon).cpu().numpy(), torch.squeeze(d_out).cpu().numpy()
-    show_mel_transfer(mel_in, mel_recon, mel_out, pooldir + '/a/a_fake_epoch_'+ str(i) + '.png')
+    d_in, d_recon, d_out, d_target = real_B_buffer.data[0], recon_B_buffer.data[0], fake_A_buffer.data[0], real_A_buffer.data[0]
+    mel_in, mel_recon, mel_out, mel_target = torch.squeeze(d_in).cpu().numpy(), torch.squeeze(d_recon).cpu().numpy(), torch.squeeze(d_out).cpu().numpy(), torch.squeeze(d_target).cpu().numpy()
+    show_mel_transfer(mel_in, mel_recon, mel_out, mel_target, pooldir + '/a/a_fake_epoch_'+ str(i) + '.png')
     
     # Save generator A2B output per epoch
-    d_in, d_recon, d_out = real_A_buffer.data[0], recon_A_buffer.data[0], fake_B_buffer.data[0]
-    mel_in, mel_recon, mel_out = torch.squeeze(d_in).cpu().numpy(), torch.squeeze(d_recon).cpu().numpy(), torch.squeeze(d_out).cpu().numpy()
-    show_mel_transfer(mel_in, mel_recon, mel_out, pooldir + '/b/b_fake_epoch_'+ str(i) + '.png')
+    d_in, d_recon, d_out, d_target = real_A_buffer.data[0], recon_A_buffer.data[0], fake_B_buffer.data[0], real_B_buffer.data[0]
+    mel_in, mel_recon, mel_out, mel_target = torch.squeeze(d_in).cpu().numpy(), torch.squeeze(d_recon).cpu().numpy(), torch.squeeze(d_out).cpu().numpy(), torch.squeeze(d_target).cpu().numpy()
+    show_mel_transfer(mel_in, mel_recon, mel_out, mel_target, pooldir + '/b/b_fake_epoch_'+ str(i) + '.png')
     
     # Saving every 10 epochs (or on last epoch)
     if(i % 10 == 0 or i == 99):
