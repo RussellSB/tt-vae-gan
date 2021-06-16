@@ -38,8 +38,8 @@ shutil.copy('hparams.py', pooldir)  # backs up hyperparameters for reference (fr
 assert max_duplets % batch_size == 0, 'Max sample pairs must be divisible by batch size!' 
 
 # Loading training data
-melset_A_128 = load_pickle('../pool/melset_A_128_cont_wn.pickle') 
-melset_B_128 = load_pickle('../pool/melset_B_128_cont_wn.pickle')
+melset_A_128 = load_pickle('../pool/melset_'+A+'_128_cont_wn.pickle') 
+melset_B_128 = load_pickle('../pool/melset_'+B+'_128_cont_wn.pickle')
 print('Melset A size:', len(melset_A_128), 'Melset B size:', len(melset_B_128))
 print('Max duplets:', max_duplets)
 

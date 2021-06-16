@@ -1,6 +1,9 @@
 # id for reference
-n = '89'  # Road to 50 res layers
-g = 1  # 10 bottleneck res blocks, 3 conv layers (best of both worlds? Lots of params tho)
+n = '90' # 3 conv, 5 res basic blocks  
+g = 0 
+
+A = 'vn' # 'vn' or '7'
+B = 'tpt' # 'tpt' or '4'
 
 # Training settings
 curr_epoch = 0
@@ -22,5 +25,5 @@ lambda_kld = 0.0001
 lambda_latent = 10.0 # 10.0
 
 # Model architecture parameters
-num_res = 10  # number of resnet blocks for resnet phases (recommended minimum is 3)
-res_type = 'bottleneck'  # choose either ['basic', 'bottleneck']
+num_res = 5  # number of resnet blocks for resnet phases (recommended minimum is 3)
+res_type = 'basic'  # choose either ['basic', 'bottleneck']
