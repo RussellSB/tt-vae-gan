@@ -3,10 +3,10 @@ import torch.nn as nn
 from torch.autograd import Variable
 import numpy as np
 
-from hparams import num_res
+from hparams import num_res, res_type
 assert num_res > 1, 'Need to have atleast more than one res block (recommended minimum 3)'
 
-# Basic Residual Block
+# Basic Residual Block (this is what UNIT used)
 class ResidualBlock(nn.Module):
     def __init__(self, dim_in):
         super(ResidualBlock, self).__init__()
@@ -34,8 +34,8 @@ class ResidualBlock(nn.Module):
         return out
     
 
-# Experimental (trying resbottlenecks instead of basic resblock)
 # adapted from (https://github.com/JayPatwardhan/ResNet-PyTorch/blob/master/ResNet/ResNet.py)
+# This is better than Basic Res Block. Similar quality. Less parameters. Faster training. Allows more depth. 
 class ResidualBottleneck(nn.Module):
     def __init__(self, dim_in):
         super(ResidualBottleneck, self).__init__()
@@ -103,22 +103,18 @@ class Encoder(nn.Module):
             nn.Conv2d(256, 512, kernel_size=4, stride=2),
             nn.BatchNorm2d(512),
             nn.LeakyReLU(0.2, inplace=True))
-             
-        self.conv4 =nn.Sequential(
-            nn.Conv2d(512, 1024, kernel_size=4, stride=2),
-            nn.BatchNorm2d(1024),
-            nn.LeakyReLU(0.2, inplace=True))
 
         # Skip connections pre bottleneck
         res_modules = []
         for i in range(num_res):
-            res_modules.append(ResidualBottleneck(1024))
+            r = ResidualBottleneck(512) if res_type == 'bottleneck' else ResidualBlock(512)
+            res_modules.append(r)
         self.res5 = nn.Sequential(*res_modules)
 
         # Fully connected bottleneck
-        self.fc6 = nn.Linear(1024, 512)
-        self.mu7 = nn.Linear(512, 256)
-        self.logvar7 = nn.Linear(512, 256)
+        self.fc6 = nn.Linear(512, 256)
+        self.mu7 = nn.Linear(256, 128)
+        self.logvar7 = nn.Linear(256, 128)
         
     def reparameterize(self, mu, logvar):
         std = torch.exp(0.5*logvar)
@@ -130,14 +126,13 @@ class Encoder(nn.Module):
         # Main layers
         x = self.conv1(x)      
         x = self.conv2(x)      
-        x = self.conv3(x)   
-        x = self.conv4(x)
+        x = self.conv3(x)  
         
         # Residual phase before main bottleneck
         x = self.res5(x)
         
         # Bottleneck
-        x = self.fc6(x.view(-1, 1024)) 
+        x = self.fc6(x.view(-1, 512)) 
         mu = self.mu7(x)
         logvar = self.logvar7(x)   
         z = self.reparameterize(mu, logvar)
@@ -150,16 +145,16 @@ class ResGen(nn.Module):
         super(ResGen, self).__init__()
 
         # Bottleneck opening
-        self.fc1 = nn.Linear(256, 512)
-        self.fc2 = nn.Linear(512, 1024)
+        self.fc1 = nn.Linear(128, 256)
+        self.fc2 = nn.Linear(256, 512)  # parallels mu or logvar layer
         
         # Skip connections
-        self.res1 = ResidualBottleneck(1024)
+        self.res1 = ResidualBottleneck(512) if res_type == 'bottleneck' else ResidualBlock(512)
         
     def forward(self, x):
         x = self.fc1(x) 
         x = self.fc2(x) 
-        x = self.res1(x.view(-1, 1024, 13, 13)) 
+        x = self.res1(x.view(-1, 512, 29, 29)) 
         return x
 
 
@@ -170,27 +165,23 @@ class Generator(nn.Module):
         # The first res block is shared so we do num_res - 1
         res_modules = []
         for i in range(num_res - 1):
-            res_modules.append(ResidualBottleneck(1024))
+            r = ResidualBottleneck(512) if res_type == 'bottleneck' else ResidualBlock(512)
+            res_modules.append(r)
         self.res1 = nn.Sequential(*res_modules)
         
         self.conv2 = nn.Sequential(
-            nn.ConvTranspose2d(1024, 512, kernel_size=4, stride=2),
-            nn.BatchNorm2d(512),
-            nn.LeakyReLU(0.2))
-        
-        self.conv3 = nn.Sequential(
-            nn.ConvTranspose2d(512, 256, kernel_size=4, stride=2), 
+            nn.ConvTranspose2d(512, 256, kernel_size=4, stride=2),
             nn.BatchNorm2d(256),
             nn.LeakyReLU(0.2))
         
-        self.conv4 = nn.Sequential(
+        self.conv3 = nn.Sequential(
             nn.ConvTranspose2d(256, 128, kernel_size=4, stride=2), 
             nn.BatchNorm2d(128),
             nn.LeakyReLU(0.2))
         
         # Final linear convolutional mapping 
-        self.conv5 = nn.Sequential(
-            nn.ConvTranspose2d(128, 1, kernel_size=11), 
+        self.conv4 = nn.Sequential(
+            nn.ConvTranspose2d(128, 1, kernel_size=7), 
             nn.Tanh())  # wrt DCGAN 
         
     def forward(self, x):
@@ -198,10 +189,10 @@ class Generator(nn.Module):
         x = self.conv2(x)
         x = self.conv3(x) 
         x = self.conv4(x) 
-        x = self.conv5(x) 
         return x
 
-
+    
+# The same discriminator of DCGAN
 class Discriminator(nn.Module, ):
     def __init__(self, loss_mode='mse'):
         super(Discriminator, self).__init__()
