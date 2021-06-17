@@ -144,7 +144,7 @@ def loss_harmonic(fake_mel, target_mel):
     fake_harmel = torch.from_numpy(fake_harmel) 
     target_harmel = torch.from_numpy(target_harmel) 
     
-    return criterion_latent(fake_harmel, target_harmel)
+    return criterion_latent(fake_harmel, target_harmel) * lambda_structure
 
 # Percussive loss (to encourage time content of source)
 def loss_percussive(fake_mel, source_mel):
@@ -157,7 +157,7 @@ def loss_percussive(fake_mel, source_mel):
     fake_permel = torch.from_numpy(fake_permel) 
     source_permel = torch.from_numpy(source_permel) 
     
-    return criterion_latent(fake_permel, source_permel)
+    return criterion_latent(fake_permel, source_permel) * lambda_structure
 
 # =====================================================================================================
 #                                       The Training Loop
@@ -297,8 +297,9 @@ for i in pbar:
                 p.data.clamp_(-clip_value, clip_value)
         
         # Update error log
-        pbar.set_postfix(vA=loss_enc_A.item(),vB=loss_enc_B.item(), A2B=loss_dec_A2B.item(), B2A=loss_dec_B2A.item(), 
-        ABA=loss_cycle_ABA.item(), BAB=loss_cycle_BAB.item(), disc_A=errDisc_A.item(), disc_B=errDisc_B.item())
+        pbar.set_postfix(vA=loss_enc_A.item(),vB=loss_enc_B.item(), advB=loss_dec_A2B.item(), advA=loss_dec_B2A.item(), 
+        cA=loss_cycle_ABA.item(), cB=loss_cycle_BAB.item(), dA=errDisc_A.item(), dB=errDisc_B.item(),
+        hA=loss_harm_B2A, hB=loss_harm_A2B, pA=loss_perc_B2A, pB=loss_perc_A2B)
         
         # Update error history every batch update 
         train_hist['enc_A'].append(loss_enc_A.item())
@@ -308,6 +309,12 @@ for i in pbar:
         train_hist['dec_A2B'].append(loss_dec_A2B.item())
         train_hist['dec_ABA'].append(loss_cycle_ABA.item())
         train_hist['dec_BAB'].append(loss_cycle_BAB.item())
+        
+        train_hist['harm_B2A'].append(loss_harm_B2A.item())   
+        train_hist['harm_A2B'].append(loss_harm_A2B.item())   
+        train_hist['perc_B2A'].append(loss_perc_B2A.item())   
+        train_hist['perc_A2B'].append(loss_perc_A2B.item())   
+        
         train_hist['dec'].append(errDec.item())
         train_hist['disc_A'].append(errDisc_A.item())
         train_hist['disc_B'].append(errDisc_B.item())    
