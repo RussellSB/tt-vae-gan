@@ -103,6 +103,10 @@ train_hist['disc_B'] = []
 train_hist['enc_A'] = []
 train_hist['enc_B'] = []
 train_hist['enc_lat'] = []
+train_hist['harm_B2A'] = []  
+train_hist['harm_A2B'] = [] 
+train_hist['perc_B2A'] = []
+train_hist['perc_A2B'] = []
 
 # =====================================================================================================
 #                                       Loss functions
@@ -299,7 +303,7 @@ for i in pbar:
         # Update error log
         pbar.set_postfix(vA=loss_enc_A.item(),vB=loss_enc_B.item(), advB=loss_dec_A2B.item(), advA=loss_dec_B2A.item(), 
         cA=loss_cycle_ABA.item(), cB=loss_cycle_BAB.item(), dA=errDisc_A.item(), dB=errDisc_B.item(),
-        hA=loss_harm_B2A, hB=loss_harm_A2B, pA=loss_perc_B2A, pB=loss_perc_A2B)
+        hA=loss_harm_B2A.item(), hB=loss_harm_A2B.item(), pA=loss_perc_B2A.item(), pB=loss_perc_A2B.item())
         
         # Update error history every batch update 
         train_hist['enc_A'].append(loss_enc_A.item())
