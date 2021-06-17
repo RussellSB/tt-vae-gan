@@ -28,7 +28,7 @@ lambda_enc = 100.0 # 100.0
 lambda_dec = 10.0 #10.0 # 10.0 # 1.0
 lambda_kld = 0.0001
 lambda_latent = 10.0 # 10.0
-lambda_structure = 10.0 # 100.0 (this is an original addition)
+lambda_structure = 100.0 # 100.0 (this is an original addition)
 
 # Model architecture parameters
 num_res = 3  # number of resnet blocks for resnet phases (recommended minimum is 3)
