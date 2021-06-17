@@ -1,14 +1,19 @@
 # id for reference
-n = '90' # 3 conv, 5 res basic blocks  
-g = 0 
+n = '92' # timbre PILOT. 3 conv, 5 res basic blocks  
+g = 1
 
-A = 'vn' # 'vn' or '7'
-B = 'tpt' # 'tpt' or '4'
+# Settings related to dataset (as saved from wavenet preprocessing)
+datadir = 'lj' # 'tt-2' or 'lj'
+if datadir == 'tt-2':
+    A, B = 'vn', 'tpt' 
+    max_duplets = 1352
+if datadir == 'lj':
+    A, B = '7', '4' 
+    max_duplets = 1680 
 
 # Training settings
-curr_epoch = 0
-max_epochs = 100
-max_duplets = 1680 
+curr_epoch = 100
+max_epochs = 200
 batch_size = 8 # 4
 learning_rate = 0.0001
 
@@ -25,5 +30,5 @@ lambda_kld = 0.0001
 lambda_latent = 10.0 # 10.0
 
 # Model architecture parameters
-num_res = 5  # number of resnet blocks for resnet phases (recommended minimum is 3)
+num_res = 3  # number of resnet blocks for resnet phases (recommended minimum is 3)
 res_type = 'basic'  # choose either ['basic', 'bottleneck']
