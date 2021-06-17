@@ -186,11 +186,11 @@ if __name__ == "__main__":
     dec_B2A.eval()
 
     # Load the paths
-    test_path_A = '../WAVENET-VOCODER/egs/gaussian/dump/'+datadir+'/logmelspectrogram/norm/eval/'
+    test_path_A = '../WAVENET-VOCODER/egs/gaussian/dump/'+datadir+'/logmelspectrogram/norm/eval_A/'
     wavmels_A = np.genfromtxt(test_path_A+'train.txt', dtype=[('wav','S50'),('mel','S50'),('nmel','i8'),('str','S27')], delimiter='|')
 
     # Only temporary
-    test_path_B = '../WAVENET-VOCODER/egs/gaussian/dump/'+datadir+'/logmelspectrogram/norm/eval_4/'
+    test_path_B = '../WAVENET-VOCODER/egs/gaussian/dump/'+datadir+'/logmelspectrogram/norm/eval_B/'
     wavmels_B = np.genfromtxt(test_path_B+'train.txt', dtype=[('wav','S50'),('mel','S50'),('nmel','i8'),('str','S27')], delimiter='|')
     
     eval_A2B(wavmels_A)

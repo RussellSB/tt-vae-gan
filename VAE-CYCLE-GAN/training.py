@@ -1,5 +1,6 @@
 import numpy as np
 from tqdm.auto import tqdm
+from scipy.ndimage.filters import median_filter
 import itertools
 
 from utils import load_pickle, save_pickle, ReplayBuffer, weights_init, show_mel, show_mel_transfer
@@ -115,14 +116,12 @@ criterion_adversarial = torch.nn.BCELoss().to(device) if (loss_mode=='bce') else
 def loss_encoding(logvar, mu, fake_mel, real_mel):
     kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
     recon = criterion_latent(fake_mel, real_mel)
-
     return ((kld * lambda_kld) + recon * lambda_enc) 
 
 # Cyclic loss for reconstruction through opposing encoder, motivate mapping of information differently to output
 def loss_cycle(logvar, mu, recon_mel, real_mel):
     kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
     recon = criterion_latent(recon_mel, real_mel)
-    
     return ((kld * lambda_kld) + recon * lambda_cycle) 
 
 # Latent loss, L1 distance between centroids of each speaker's distribution
@@ -133,6 +132,32 @@ def loss_latent(mu_A, mu_B):
 def loss_adversarial(output, label):
     loss = criterion_adversarial(output, label) * lambda_dec
     return loss
+
+# Harmonic loss (to encourage frequency bands of target)
+def loss_harmonic(fake_mel, target_mel):
+    fake_mel = fake_mel.cpu().detach().numpy()
+    target_mel = target_mel.cpu().detach().numpy()
+    
+    fake_harmel = median_filter(fake_mel, (1, 1, 15,1))
+    target_harmel = median_filter(target_mel, (1, 1, 15,1))
+    
+    fake_harmel = torch.from_numpy(fake_harmel) 
+    target_harmel = torch.from_numpy(target_harmel) 
+    
+    return criterion_latent(fake_harmel, target_harmel)
+
+# Percussive loss (to encourage time content of source)
+def loss_percussive(fake_mel, source_mel):
+    fake_mel = fake_mel.cpu().detach().numpy()
+    source_mel = source_mel.cpu().detach().numpy()
+    
+    fake_permel = median_filter(fake_mel, (1, 1, 1,15))
+    source_permel = median_filter(source_mel, (1, 1, 1,15))
+    
+    fake_permel = torch.from_numpy(fake_permel) 
+    source_permel = torch.from_numpy(source_permel) 
+    
+    return criterion_latent(fake_permel, source_permel)
 
 # =====================================================================================================
 #                                       The Training Loop
@@ -199,7 +224,15 @@ for i in pbar:
         loss_cycle_BAB = loss_cycle(logvar_recon_B, mu_recon_B, recon_mel_B, real_mel_B)
 
         # Latent loss
-        loss_lat = loss_latent(mu_A, mu_B)  # could also be mu_recon_A, mu_recon_B
+        loss_lat = loss_latent(mu_A, mu_B)  # (could also be + mu_recon_A, mu_recon_B)
+        
+        # Harmonic loss (horizontal structure)
+        loss_harm_B2A = loss_harmonic(fake_mel_A, real_mel_A)
+        loss_harm_A2B = loss_harmonic(fake_mel_B, real_mel_B)
+        
+        # Percussive loss (vertical structure)
+        loss_perc_B2A = loss_percussive(fake_mel_A, real_mel_B)
+        loss_perc_A2B = loss_percussive(fake_mel_B, real_mel_A)
         
         # Resetting gradients
         optim_enc.zero_grad()
@@ -207,7 +240,13 @@ for i in pbar:
         optim_dec.zero_grad() 
         
         # Backward pass for encoder and update all res/dec generator components
-        errDec = loss_dec_A2B + loss_dec_B2A + loss_cycle_ABA + loss_cycle_BAB + loss_enc_B + loss_enc_A + loss_lat 
+        errDec = loss_dec_A2B + loss_dec_B2A +\
+                loss_cycle_ABA + loss_cycle_BAB +\
+                loss_enc_B + loss_enc_A +\
+                loss_lat +\
+                loss_harm_B2A + loss_harm_A2B +\
+                loss_perc_B2A + loss_perc_A2B
+                 
         errDec.backward()
         optim_enc.step()
         optim_res.step()
