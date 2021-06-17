@@ -615,9 +615,9 @@ def eval_model(global_step, writer, device, model, y, c, g, input_lengths, eval_
     # Save audio
     os.makedirs(eval_dir, exist_ok=True)
     path = join(eval_dir, "step{:09d}_predicted.wav".format(global_step))
-    sf.write(path, y_hat, sr=hparams.sample_rate)
+    sf.write(path, y_hat, hparams.sample_rate)
     path = join(eval_dir, "step{:09d}_target.wav".format(global_step))
-    sf.write(path, y_target, sr=hparams.sample_rate)
+    sf.write(path, y_target, hparams.sample_rate)
 
     # save figure
     path = join(eval_dir, "step{:09d}_waveplots.png".format(global_step))
@@ -670,9 +670,9 @@ def save_states(global_step, writer, y_hat, y, input_lengths, checkpoint_dir=Non
     audio_dir = join(checkpoint_dir, "intermediate", "audio")
     os.makedirs(audio_dir, exist_ok=True)
     path = join(audio_dir, "step{:09d}_predicted.wav".format(global_step))
-    sf.write(path, y_hat, sr=hparams.sample_rate)
+    sf.write(path, y_hat, hparams.sample_rate)
     path = join(audio_dir, "step{:09d}_target.wav".format(global_step))
-    sf.write(path, y, sr=hparams.sample_rate)
+    sf.write(path, y, hparams.sample_rate)
 
 # workaround for https://github.com/pytorch/pytorch/issues/15716
 # the idea is to return outputs and replicas explicitly, so that making pytorch
