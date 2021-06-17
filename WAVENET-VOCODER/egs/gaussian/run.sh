@@ -5,9 +5,9 @@ VOC_DIR=$script_dir/../../
 
 # Directory that contains all wav files
 # **CHANGE** this to your database path
-db_root='../../../pool/wavs'
+db_root='../../../pool/wavs-tt-2'
 
-spk="tc" # used 'lj' (default) for vc. Now using tc for timbre conversion
+spk="tt-2" # 'lj', 'tt', 'tt-2'
 dumpdir=dump
 
 # train/dev/eval split
