@@ -1,6 +1,5 @@
 import numpy as np
 from tqdm.auto import tqdm
-from scipy.ndimage.filters import median_filter
 import itertools
 
 from utils import load_pickle, save_pickle, ReplayBuffer, weights_init, show_mel, show_mel_transfer
@@ -108,48 +107,24 @@ criterion_adversarial = torch.nn.BCELoss().to(device) if (loss_mode=='bce') else
 def loss_encoding(logvar, mu, fake_mel, real_mel):
     kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
     recon = criterion_latent(fake_mel, real_mel)
+
     return ((kld * lambda_kld) + recon * lambda_enc) 
 
 # Cyclic loss for reconstruction through opposing encoder, motivate mapping of information differently to output
 def loss_cycle(logvar, mu, recon_mel, real_mel):
     kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
     recon = criterion_latent(recon_mel, real_mel)
+    
     return ((kld * lambda_kld) + recon * lambda_cycle) 
 
 # Latent loss, L1 distance between centroids of each speaker's distribution
-def loss_latent(mu, mu_recon):
-    return criterion_latent(mu, mu_recon) * lambda_latent
+def loss_latent(mu_A, mu_B):
+    return criterion_latent(mu_A, mu_B) * lambda_latent
 
 # Adversarial loss function for decoder and discriminator seperately
 def loss_adversarial(output, label):
     loss = criterion_adversarial(output, label) * lambda_dec
     return loss
-
-# Harmonic loss (to encourage frequency bands of target)
-def loss_harmonic(fake_mel, target_mel):
-    fake_mel = fake_mel.cpu().detach().numpy()
-    target_mel = target_mel.cpu().detach().numpy()
-    
-    fake_harmel = median_filter(fake_mel, (1, 1, 15,1))
-    target_harmel = median_filter(target_mel, (1, 1, 15,1))
-    
-    fake_harmel = torch.from_numpy(fake_harmel) 
-    target_harmel = torch.from_numpy(target_harmel) 
-    
-    return criterion_latent(fake_harmel, target_harmel) * lambda_structure
-
-# Percussive loss (to encourage time content of source)
-def loss_percussive(fake_mel, source_mel):
-    fake_mel = fake_mel.cpu().detach().numpy()
-    source_mel = source_mel.cpu().detach().numpy()
-    
-    fake_permel = median_filter(fake_mel, (1, 1, 1,15))
-    source_permel = median_filter(source_mel, (1, 1, 1,15))
-    
-    fake_permel = torch.from_numpy(fake_permel) 
-    source_permel = torch.from_numpy(source_permel) 
-    
-    return criterion_latent(fake_permel, source_permel) * lambda_structure
 
 # =====================================================================================================
 #                                       The Training Loop
@@ -216,22 +191,7 @@ for i in pbar:
         loss_cycle_BAB = loss_cycle(logvar_recon_B, mu_recon_B, recon_mel_B, real_mel_B)
 
         # Latent loss
-        loss_lat_A = loss_latent(mu_A, mu_recon_A) 
-        loss_lat_B = loss_latent(mu_B, mu_recon_B)
-        
-        # Harmonic loss (horizontal structure between target)
-        loss_harm_B2A = loss_harmonic(fake_mel_A, real_mel_A)
-        loss_harm_A2B = loss_harmonic(fake_mel_B, real_mel_B)
-        
-        loss_harm_ABA = loss_harmonic(recon_mel_A, real_mel_A)
-        loss_harm_BAB = loss_harmonic(recon_mel_B, real_mel_B)
-        
-        # Percussive loss (vertical structure between source)
-        loss_perc_B2A = loss_percussive(fake_mel_A, real_mel_B)
-        loss_perc_A2B = loss_percussive(fake_mel_B, real_mel_A)
-        
-        loss_perc_ABA = loss_percussive(recon_mel_A, real_mel_B)
-        loss_perc_BAB = loss_percussive(recon_mel_B, real_mel_A)
+        loss_lat = loss_latent(mu_A, mu_B)  # could also be mu_recon_A, mu_recon_B
         
         # Resetting gradients
         optim_enc.zero_grad()
@@ -239,16 +199,7 @@ for i in pbar:
         optim_dec.zero_grad() 
         
         # Backward pass for encoder and update all res/dec generator components
-        errDec = loss_dec_A2B + loss_dec_B2A +\
-                loss_cycle_ABA + loss_cycle_BAB +\
-                loss_enc_B + loss_enc_A +\
-                loss_lat_A +\
-                loss_lat_B +\
-                loss_harm_B2A + loss_harm_A2B +\
-                loss_harm_ABA + loss_harm_BAB +\
-                loss_perc_B2A + loss_perc_A2B +\
-                loss_perc_ABA + loss_perc_BAB
-                 
+        errDec = loss_dec_A2B + loss_dec_B2A + loss_cycle_ABA + loss_cycle_BAB + loss_enc_B + loss_enc_A + loss_lat 
         errDec.backward()
         optim_enc.step()
         optim_res.step()
@@ -299,35 +250,20 @@ for i in pbar:
                 p.data.clamp_(-clip_value, clip_value)
         
         # Update error log
-        pbar.set_postfix(vA=loss_enc_A.item(),vB=loss_enc_B.item(), advB=loss_dec_A2B.item(), advA=loss_dec_B2A.item(), 
-        cA=loss_cycle_ABA.item(), cB=loss_cycle_BAB.item(), dA=errDisc_A.item(), dB=errDisc_B.item(),
-        hA=loss_harm_B2A.item(), hB=loss_harm_A2B.item(), pA=loss_perc_B2A.item(), pB=loss_perc_A2B.item())
+        pbar.set_postfix(vA=loss_enc_A.item(),vB=loss_enc_B.item(), A2B=loss_dec_A2B.item(), B2A=loss_dec_B2A.item(), 
+        ABA=loss_cycle_ABA.item(), BAB=loss_cycle_BAB.item(), disc_A=errDisc_A.item(), disc_B=errDisc_B.item())
         
         # Update error history every batch update 
         train_hist['enc_A'].append(loss_enc_A.item())
         train_hist['enc_B'].append(loss_enc_B.item())
-        
-        train_hist['enc_lat_A'].append(loss_lat_A.item())
-        train_hist['enc_lat_B'].append(loss_lat_B.item())
-        
+        train_hist['enc_lat'].append(loss_lat.item())
         train_hist['dec_B2A'].append(loss_dec_B2A.item())
         train_hist['dec_A2B'].append(loss_dec_A2B.item())
         train_hist['dec_ABA'].append(loss_cycle_ABA.item())
         train_hist['dec_BAB'].append(loss_cycle_BAB.item())
-        
-        train_hist['harm_B2A'].append(loss_harm_B2A.item())   
-        train_hist['harm_A2B'].append(loss_harm_A2B.item()) 
-        train_hist['harm_BAB'].append(loss_harm_BAB.item())   
-        train_hist['harm_ABA'].append(loss_harm_ABA.item()) 
-        
-        train_hist['perc_B2A'].append(loss_perc_B2A.item())   
-        train_hist['perc_A2B'].append(loss_perc_A2B.item()) 
-        train_hist['perc_BAB'].append(loss_perc_BAB.item())   
-        train_hist['perc_ABA'].append(loss_perc_ABA.item()) 
-        
         train_hist['dec'].append(errDec.item())
         train_hist['disc_A'].append(errDisc_A.item())
-        train_hist['disc_B'].append(errDisc_B.item())  
+        train_hist['disc_B'].append(errDisc_B.item())    
 
      # Save generator B2A output per epoch
     d_in, d_recon, d_out, d_target = real_B_buffer.data[0], recon_B_buffer.data[0], fake_A_buffer.data[0], real_A_buffer.data[0]
