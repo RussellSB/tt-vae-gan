@@ -5,14 +5,14 @@ VOC_DIR=$script_dir/../../
 
 # Directory that contains all wav files
 # **CHANGE** this to your database path
-db_root='../../../pool/wavs-tt-2'
+db_root='../../../pool/wavs-tt-1-full'
 
-spk="tt-2" # 'lj', 'tt', 'tt-2'
+spk="tt-1-full" # 'lj', 'tt', 'tt-2'
 dumpdir=dump
 
 # train/dev/eval split
-dev_size=100
-eval_size=100
+dev_size=0.05
+eval_size=0.05
 # Maximum size of train/dev/eval data (in hours).
 # set small value (e.g. 0.2) for testing
 limit=1000000

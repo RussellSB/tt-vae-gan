@@ -1,5 +1,5 @@
 # id for reference
-n = '93' # 3 conv, 5 res basic blocks  
+n = '94' # harmonic, percussive loss. Testing with reconstruction (and for latent too) + modified latent to be more discriminable
 g = 1
 
 # Settings related to dataset (as saved from wavenet preprocessing)
@@ -14,7 +14,7 @@ if datadir == 'lj':
 # Training settings
 curr_epoch = 0
 max_epochs = 100
-batch_size = 8 # 4
+batch_size = 8 # 4, 8
 learning_rate = 0.0001
 
 # Adversarial loss function
