@@ -1,5 +1,5 @@
 # id for reference
-n = '94' # harmonic, percussive loss. Testing with reconstruction (and for latent too) + modified latent to be more discriminable
+n = '97' # Trying out GLU
 g = 1
 
 # Settings related to dataset (as saved from wavenet preprocessing)
