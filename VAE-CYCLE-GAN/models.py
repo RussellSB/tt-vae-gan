@@ -35,7 +35,6 @@ class ResidualBlock(nn.Module):
     
 
 # adapted from (https://github.com/JayPatwardhan/ResNet-PyTorch/blob/master/ResNet/ResNet.py)
-# This is better than Basic Res Block. Similar quality. Less parameters. Faster training. Allows more depth. 
 class ResidualBottleneck(nn.Module):
     def __init__(self, dim_in):
         super(ResidualBottleneck, self).__init__()
