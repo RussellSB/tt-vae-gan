@@ -138,16 +138,16 @@ class Encoder(nn.Module):
         return z, mu, logvar
     
     
-# Universal decoding residual block for first layer    
+# Universal decoding residual block for first layer (temp removed)    
 class ResGen(nn.Module):
     def __init__(self):
         super(ResGen, self).__init__()
 
-        # Bottleneck opening
+        #Bottleneck opening
         self.fc1 = nn.Linear(128, 256)
         self.fc2 = nn.Linear(256, 512)  # parallels mu or logvar layer
         
-        # Skip connections
+        #Skip connections
         self.res1 = ResidualBottleneck(512) if res_type == 'bottleneck' else ResidualBlock(512)
         
     def forward(self, x):
@@ -163,7 +163,7 @@ class Generator(nn.Module):
         
         # The first res block is shared so we do num_res - 1
         res_modules = []
-        for i in range(num_res - 1):
+        for i in range(num_res-1):
             r = ResidualBottleneck(512) if res_type == 'bottleneck' else ResidualBlock(512)
             res_modules.append(r)
         self.res1 = nn.Sequential(*res_modules)

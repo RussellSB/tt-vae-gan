@@ -111,11 +111,9 @@ def loss_encoding(logvar, mu, fake_mel, real_mel):
     return ((kld * lambda_kld) + recon * lambda_enc) 
 
 # Cyclic loss for reconstruction through opposing encoder, motivate mapping of information differently to output
-def loss_cycle(logvar, mu, recon_mel, real_mel):
-    kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+def loss_cycle(recon_mel, real_mel):
     recon = criterion_latent(recon_mel, real_mel)
-    
-    return ((kld * lambda_kld) + recon * lambda_cycle) 
+    return (recon * lambda_cycle) 
 
 # Latent loss, L1 distance between centroids of each speaker's distribution
 def loss_latent(mu_A, mu_B):
@@ -187,8 +185,8 @@ for i in pbar:
         loss_dec_A2B = loss_adversarial(fake_output_B, real_label) if (not isWass) else -torch.mean(fake_output_B) * lambda_dec
         
         # Cyclic loss
-        loss_cycle_ABA = loss_cycle(logvar_recon_A, mu_recon_A, recon_mel_A, real_mel_A)
-        loss_cycle_BAB = loss_cycle(logvar_recon_B, mu_recon_B, recon_mel_B, real_mel_B)
+        loss_cycle_ABA = loss_cycle(recon_mel_A, real_mel_A)
+        loss_cycle_BAB = loss_cycle(recon_mel_B, real_mel_B)
 
         # Latent loss
         loss_lat = loss_latent(mu_A, mu_B)  # could also be mu_recon_A, mu_recon_B

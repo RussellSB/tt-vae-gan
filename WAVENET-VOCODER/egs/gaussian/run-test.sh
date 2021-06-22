@@ -5,14 +5,17 @@ VOC_DIR=$script_dir/../../
 
 # Directory that contains all wav files
 # **CHANGE** this to your database path
-db_root='../../../pool/wavs-tt-2'
-
-spk="tt-2" # 'lj', 'tt', 'tt-2'
+db_root='../../../pool/wavs-full-test-4/'
+datadir=lj # jj, tt, tt-2
+spk="test-4" # 'test-7, test-4, test-vn, test-tpt
+outdir=dump/$datadir/logmelspectrogram/norm/$spk
 dumpdir=dump
 
+# THIS IS PURELY FOR PREPROCESSING FULL SAMPLE TEST SETS (for full demo after)
+
 # train/dev/eval split
-dev_size=100
-eval_size=100
+dev_size=0.1
+eval_size=0.1
 # Maximum size of train/dev/eval data (in hours).
 # set small value (e.g. 0.2) for testing
 limit=1000000
@@ -75,15 +78,18 @@ if [ ${stage} -le 0 ] && [ ${stop_stage} -ge 0 ]; then
     python $VOC_DIR/mksubset.py $db_root $data_root \
       --train-dev-test-split --dev-size $dev_size --test-size $eval_size \
       --limit=$limit
+      
+    # ADDED
+    # Copies wavs from all other folders to training folder
+    echo Copying files from dev and eval to train_no_dev
+    cp -a data/$spk/dev/. data/$spk/train_no_dev/
+    cp -a data/$spk/eval/. data/$spk/train_no_dev/
 fi
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
     echo "stage 1: Feature Generation"
-    for s in ${datasets[@]};
-    do
-      python $VOC_DIR/preprocess.py wavallin $data_root/$s ${dump_org_dir}/$s \
+    python $VOC_DIR/preprocess.py wavallin $data_root/$train_set ${dump_org_dir}/$train_set \
         --hparams="global_gain_scale=${global_gain_scale}" --preset=$hparams
-    done
 
     # Compute mean-var normalization stats
     find $dump_org_dir/$train_set -type f -name "*feats.npy" > train_list.txt
@@ -91,36 +97,11 @@ if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then
     rm -f train_list.txt
 
     # Apply normalization
-    for s in ${datasets[@]};
-    do
-      python $VOC_DIR/preprocess_normalize.py ${dump_org_dir}/$s $dump_norm_dir/$s \
+    python $VOC_DIR/preprocess_normalize.py ${dump_org_dir}/$train_set $dump_norm_dir/$train_set \
         $dump_org_dir/meanvar.joblib
-    done
     cp -f $dump_org_dir/meanvar.joblib ${dump_norm_dir}/meanvar.joblib
-fi
-
-if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
-    echo "stage 2: WaveNet training"
-    echo CURRENTLY USING $expdir/checkpoint_step000361472.pth
-    python $VOC_DIR/train.py --dump-root $dump_norm_dir --preset $hparams \
-      --checkpoint-dir=$expdir \
-      --log-event-path=tensorboard/${expname}\
-      --checkpoint=$expdir/checkpoint_step000300000.pth 
-      # THIS IS TEMPORARY (REMOVE FOR OTHER TRAINING WAVENET EXPERIMENTS IMP)
-fi
-
-if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
-    echo "stage 3: Synthesis waveform from WaveNet"
-    if [ -z $eval_checkpoint ]; then
-      eval_checkpoint=$expdir/checkpoint_latest.pth
-    fi
-    name=$(basename $eval_checkpoint)
-    name=${name/.pth/}
-    for s in $dev_set $eval_set;
-    do
-      dst_dir=$expdir/generated/$name/$s
-      python $VOC_DIR/evaluate.py $dump_norm_dir/$s $eval_checkpoint $dst_dir \
-        --preset $hparams --hparams="batch_size=$inference_batch_size" \
-        --num-utterances=$eval_max_num_utt
-    done
+    
+    echo Saving to specified $outdir
+    mkdir -p $outdir
+    cp -r $dump_norm_dir/$train_set/. $outdir
 fi

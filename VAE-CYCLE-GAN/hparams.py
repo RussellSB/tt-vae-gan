@@ -1,5 +1,5 @@
 # id for reference
-n = '97' # Trying out GLU
+n = '103' # Tweaking cyclic loss (Elbadawy's recommendation)
 g = 1
 
 # Settings related to dataset (as saved from wavenet preprocessing)
@@ -14,7 +14,7 @@ if datadir == 'lj':
 # Training settings
 curr_epoch = 0
 max_epochs = 100
-batch_size = 8 # 4, 8
+batch_size = 4 # 4, 8
 learning_rate = 0.0001
 
 # Adversarial loss function
@@ -33,3 +33,6 @@ lambda_structure = 100.0 # 100.0 (this is an original addition)
 # Model architecture parameters
 num_res = 3  # number of resnet blocks for resnet phases (recommended minimum is 3)
 res_type = 'basic'  # choose either ['basic', 'bottleneck']
+
+# Evaluate config
+infer_type = 'short'  #  long, short

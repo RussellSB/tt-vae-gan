@@ -10,13 +10,12 @@ from models import Encoder, ResGen, Generator
 from io import StringIO
 import skimage.metrics
 
-from hparams import n,g, datadir, A, B
+from hparams import n,g, datadir, A, B, infer_type
 
 device = torch.device('cuda')
 torch.cuda.set_device(g)
 map_location='cuda:'+str(g)
 path = '../pool/'+n
-
 
 def to_numpy(data):
     mel = data.data[0]
@@ -83,7 +82,7 @@ def eval_B2A(wavmels_B):
     path_pool= path+'/test_B2A/'
     if not os.path.exists(path_pool): os.makedirs(path_pool)
     
-    traintxt = '../WAVENET-VOCODER/egs/gaussian/dump/'+datadir+'/logmelspectrogram/norm/'+n+'_B2A/train.txt'
+    traintxt = '../WAVENET-VOCODER/egs/gaussian/dump/'+datadir+'/logmelspectrogram/norm/'+n+'_B2A/'+'/train.txt'
     open(traintxt, 'w').close() # Clears file from any previous runs
     f = open(traintxt, 'a')  # Opens file for appending
     
@@ -132,7 +131,7 @@ def eval_A2B(wavemels_A):
     path_pool= path+'/test_A2B/'
     if not os.path.exists(path_pool): os.makedirs(path_pool)
     
-    traintxt = '../WAVENET-VOCODER/egs/gaussian/dump/'+datadir+'/logmelspectrogram/norm/'+n+'_A2B/train.txt'
+    traintxt = '../WAVENET-VOCODER/egs/gaussian/dump/'+datadir+'/logmelspectrogram/norm/'+n+'_A2B/'+'train.txt'
     open(traintxt, 'w').close() # Clears file from any previous runs
     f = open(traintxt, 'a')  # Opens file for appending
     
@@ -186,11 +185,13 @@ if __name__ == "__main__":
     dec_B2A.eval()
 
     # Load the paths
-    test_path_A = '../WAVENET-VOCODER/egs/gaussian/dump/'+datadir+'/logmelspectrogram/norm/eval_A/'
+    end = 'test_A/' if infer_type=='long' else 'eval_A/'
+    test_path_A = '../WAVENET-VOCODER/egs/gaussian/dump/'+datadir+'/logmelspectrogram/norm/'+end
     wavmels_A = np.genfromtxt(test_path_A+'train.txt', dtype=[('wav','S50'),('mel','S50'),('nmel','i8'),('str','S27')], delimiter='|')
 
     # Only temporary
-    test_path_B = '../WAVENET-VOCODER/egs/gaussian/dump/'+datadir+'/logmelspectrogram/norm/eval_B/'
+    end = 'test_B/' if infer_type=='long' else 'eval_B/'
+    test_path_B = '../WAVENET-VOCODER/egs/gaussian/dump/'+datadir+'/logmelspectrogram/norm/'+end
     wavmels_B = np.genfromtxt(test_path_B+'train.txt', dtype=[('wav','S50'),('mel','S50'),('nmel','i8'),('str','S27')], delimiter='|')
     
     eval_A2B(wavmels_A)
