@@ -167,6 +167,9 @@ def eval_A2B(wavemels_A):
         
 
 if __name__ == "__main__":
+    print('Evaluating experiment '+n+'....')
+    print('Inference mode:', infer_type)
+    
     # Model Instantiation
     enc = Encoder().to(device)  # Shared encoder model
     res = ResGen().to(device)  # Shared residual decoding block

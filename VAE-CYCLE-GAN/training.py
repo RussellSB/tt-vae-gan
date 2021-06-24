@@ -116,8 +116,8 @@ def loss_cycle(recon_mel, real_mel):
     return (recon * lambda_cycle) 
 
 # Latent loss, L1 distance between centroids of each speaker's distribution
-def loss_latent(mu_A, mu_B):
-    return criterion_latent(mu_A, mu_B) * lambda_latent
+def loss_latent(mean_A, mean_B):
+    return criterion_latent(mean_A, mean_B) * lambda_latent
 
 # Adversarial loss function for decoder and discriminator seperately
 def loss_adversarial(output, label):
@@ -181,15 +181,15 @@ for i in pbar:
         loss_enc_B = loss_encoding(logvar_B, mu_B, fake_mel_A, real_mel_B)
         
         # Decoder/Generator loss
-        loss_dec_B2A = loss_adversarial(fake_output_A, real_label) if (not isWass) else -torch.mean(fake_output_A) * lambda_dec
-        loss_dec_A2B = loss_adversarial(fake_output_B, real_label) if (not isWass) else -torch.mean(fake_output_B) * lambda_dec
+        loss_dec_B2A = loss_adversarial(fake_output_A, real_label)
+        loss_dec_A2B = loss_adversarial(fake_output_B, real_label)
         
         # Cyclic loss
         loss_cycle_ABA = loss_cycle(recon_mel_A, real_mel_A)
         loss_cycle_BAB = loss_cycle(recon_mel_B, real_mel_B)
 
         # Latent loss
-        loss_lat = loss_latent(mu_A, mu_B)  # could also be mu_recon_A, mu_recon_B
+        loss_lat = loss_latent(mu_A, mu_B)
         
         # Resetting gradients
         optim_enc.zero_grad()
@@ -214,9 +214,9 @@ for i in pbar:
         fake_mel_A = fake_A_buffer.push_and_pop(fake_mel_A)
         fake_out_A = torch.squeeze(disc_A(fake_mel_A.detach()))
         
-        loss_D_real_A = loss_adversarial(real_out_A, real_label) if (not isWass) else -torch.mean(real_out_A)
-        loss_D_fake_A = loss_adversarial(fake_out_A, fake_label) if (not isWass) else torch.mean(fake_out_A) 
-        errDisc_A = (loss_D_real_A + loss_D_fake_A) / 2  if (not isWass) else loss_D_real_A + loss_D_fake_A
+        loss_D_real_A = loss_adversarial(real_out_A, real_label)
+        loss_D_fake_A = loss_adversarial(fake_out_A, fake_label)
+        errDisc_A = (loss_D_real_A + loss_D_fake_A) / 2
         
         # Forward pass disc_B
         real_out_B = torch.squeeze(disc_B(real_mel_B))
@@ -225,9 +225,9 @@ for i in pbar:
         fake_mel_B = fake_B_buffer.push_and_pop(fake_mel_B)
         fake_out_B = torch.squeeze(disc_B(fake_mel_B.detach()))
 
-        loss_D_real_B = loss_adversarial(real_out_B, real_label) if (not isWass) else -torch.mean(real_out_B)
-        loss_D_fake_B = loss_adversarial(fake_out_B, fake_label) if (not isWass) else torch.mean(fake_out_B)
-        errDisc_B = (loss_D_real_B + loss_D_fake_B) / 2 if (not isWass) else loss_D_real_B + loss_D_fake_B
+        loss_D_real_B = loss_adversarial(real_out_B, real_label)
+        loss_D_fake_B = loss_adversarial(fake_out_B, fake_label)
+        errDisc_B = (loss_D_real_B + loss_D_fake_B) / 2
                 
         # Resetting gradients
         optim_disc_A.zero_grad()
@@ -238,14 +238,6 @@ for i in pbar:
         errDisc_B.backward()
         optim_disc_A.step()
         optim_disc_B.step() 
-        
-        if(isWass):
-            # Clip discriminator parameters
-            for p in disc_A.parameters():
-                p.data.clamp_(-clip_value, clip_value)
-
-            for p in disc_B.parameters():
-                p.data.clamp_(-clip_value, clip_value)
         
         # Update error log
         pbar.set_postfix(vA=loss_enc_A.item(),vB=loss_enc_B.item(), A2B=loss_dec_A2B.item(), B2A=loss_dec_B2A.item(), 
