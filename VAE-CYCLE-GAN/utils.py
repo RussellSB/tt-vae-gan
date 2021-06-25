@@ -31,7 +31,7 @@ def show_mel(mel):
     plt.tight_layout()
 
 # Plots mels that are already amplitude scaled and saves
-def show_mel_transfer(mel_in, mel_recon, mel_out, mel_target, save_path):
+def show_mel_transfer(curr_epoch, mel_in, mel_recon, mel_out, mel_target, save_path):
     fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(6, 6))
     
     ax[0,0].imshow(np.rot90(mel_in), interpolation="None")
@@ -54,14 +54,15 @@ def show_mel_transfer(mel_in, mel_recon, mel_out, mel_target, save_path):
     ax[1,1].set(title='Target')
     ax[1,1].set_xlabel('Frames')
     ax[1,1].axes.yaxis.set_ticks([])
-
+    
+    fig.suptitle('Epoch ' + str(curr_epoch))
     plt.savefig(save_path)
     plt.close()
 
     
 # Plots mels that are already amplitude scaled and saves
 def show_mel_transfer_eval(mel_in, mel_recon, mel_out, save_path):
-    fig, ax = plt.subplots(nrows=1, ncols=3, sharex=True)
+    fig, ax = plt.subplots(nrows=1, ncols=3, sharex=True, figsize=(6,3))
     
     ax[0].imshow(np.rot90(mel_in), interpolation="None")
     ax[0].set(title='Input')
@@ -113,3 +114,11 @@ def weights_init(m):
     elif classname.find('BatchNorm') != -1:
         nn.init.normal_(m.weight.data, 1.0, 0.02)
         nn.init.constant_(m.bias.data, 0)
+        
+
+# Returns a plottable image of batch
+def to_numpy(data):
+    mel = data.data[0]
+    mel = mel.view(128, 128)
+    mel = mel.detach().cpu().numpy()
+    return mel

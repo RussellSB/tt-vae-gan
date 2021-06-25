@@ -1,7 +1,7 @@
 import numpy as np
 from tqdm.auto import tqdm
 from matplotlib import pyplot as plt
-from utils import load_pickle, save_pickle, show_mel, show_mel_transfer_eval
+from utils import load_pickle, save_pickle, show_mel, show_mel_transfer_eval, to_numpy
 import itertools
 import torch
 import os
@@ -16,12 +16,6 @@ device = torch.device('cuda')
 torch.cuda.set_device(g)
 map_location='cuda:'+str(g)
 path = '../pool/'+n
-
-def to_numpy(data):
-    mel = data.data[0]
-    mel = mel.view(128, 128)
-    mel = mel.detach().cpu().numpy()
-    return mel
 
 
 def forward_A2B(mel_in):

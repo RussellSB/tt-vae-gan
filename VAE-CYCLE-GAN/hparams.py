@@ -1,6 +1,6 @@
 # id for reference
-n = '109'
-g = 0
+n = '110'
+g = 1
 
 # Settings related to dataset (as saved from wavenet preprocessing)
 datadir = 'lj' # 'tt-2' or 'lj'
@@ -13,7 +13,7 @@ if datadir == 'lj':
 
 # Training settings
 curr_epoch = 100
-max_epochs = 101
+max_epochs = 200
 batch_size = 4 # 4, 8
 learning_rate = 0.0001
 
@@ -21,7 +21,7 @@ learning_rate = 0.0001
 loss_mode = 'mse'  # set to 'bce' or 'mse'
 
 # Loss function weighting 
-lambda_cycle = 100.0 # 100.0 
+lambda_cycle = 0 # 100.0 # 0
 lambda_enc = 100.0 # 100.0 
 lambda_dec = 10.0 #10.0
 lambda_kld = 0.001  # 0.001

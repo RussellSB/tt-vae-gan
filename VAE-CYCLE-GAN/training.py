@@ -2,7 +2,7 @@ import numpy as np
 from tqdm.auto import tqdm
 import itertools
 
-from utils import load_pickle, save_pickle, ReplayBuffer, weights_init, show_mel, show_mel_transfer
+from utils import load_pickle, save_pickle, ReplayBuffer, weights_init, show_mel, show_mel_transfer, to_numpy
 from models import Encoder, ResGen, Generator, Discriminator
 from hparams import *
 import shutil
@@ -76,15 +76,9 @@ else:  # Load previous weights for when curr epochs are more than zero,
     disc_A.load_state_dict(torch.load(pooldir+'/disc_A.pt'))
     disc_B.load_state_dict(torch.load(pooldir+'/disc_B.pt'))    
 
-# Instantiate buffers
-real_A_buffer = ReplayBuffer() 
-recon_A_buffer = ReplayBuffer()  
+# Instantiate buffers 
 fake_A_buffer = ReplayBuffer() 
-
-real_B_buffer = ReplayBuffer()
-recon_B_buffer = ReplayBuffer()
 fake_B_buffer = ReplayBuffer()
-
 
 # Initialise optimizers
 optim_enc = torch.optim.Adam(enc.parameters(), lr=learning_rate) 
@@ -107,7 +101,6 @@ criterion_adversarial = torch.nn.BCELoss().to(device) if (loss_mode=='bce') else
 def loss_encoding(logvar, mu, fake_mel, real_mel):
     kld = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
     recon = criterion_latent(fake_mel, real_mel)
-
     return ((kld * lambda_kld) + recon * lambda_enc) 
 
 # Cyclic loss for reconstruction through opposing encoder, motivate mapping of information differently to output
@@ -151,7 +144,7 @@ for i in pbar:
         fake_label = torch.squeeze(torch.full((batch_size, 1), 0, device=device, dtype=torch.float32))
         
         # =====================================================
-        #            Encoders and Decoding Generators update
+        #                    Generation Pass
         # =====================================================  
 
         # Forward pass for B to A
@@ -175,6 +168,22 @@ for i in pbar:
         latent_recon_B, mu_recon_B, logvar_recon_B = enc(fake_mel_B)
         pseudo_recon_B = res(latent_recon_B)
         recon_mel_A = dec_B2A(pseudo_recon_B)  
+        
+        # =====================================================
+        #                  Plotting inference
+        # ===================================================== 
+        
+        # Save generator B2A output per epoch
+        d_in, d_recon, d_out, d_target = to_numpy(real_mel_B), to_numpy(recon_mel_B), to_numpy(fake_mel_A), to_numpy(real_mel_A)
+        show_mel_transfer(i, d_in, d_recon, d_out, d_target, pooldir + '/a/a_fake_epoch_'+ str(i) + '.png')
+
+        # Save generator A2B output per epoch
+        d_in, d_recon, d_out, d_target = to_numpy(real_mel_A), to_numpy(recon_mel_A), to_numpy(fake_mel_B), to_numpy(real_mel_B)
+        show_mel_transfer(i, d_in, d_recon, d_out, d_target, pooldir + '/b/b_fake_epoch_'+ str(i) + '.png')
+        
+        # =====================================================
+        #            Generator Loss computation
+        # ===================================================== 
         
         # Encoding loss A and B
         loss_enc_A = loss_encoding(logvar_A, mu_A, fake_mel_B, real_mel_A)
@@ -209,8 +218,6 @@ for i in pbar:
 
         # Forward pass disc_A
         real_out_A = torch.squeeze(disc_A(real_mel_A))
-        real_B_buffer.push_and_pop(real_mel_B)  # Add real to buffer
-        recon_B_buffer.push_and_pop(recon_mel_B)  # Add recon to buffer
         fake_mel_A = fake_A_buffer.push_and_pop(fake_mel_A)
         fake_out_A = torch.squeeze(disc_A(fake_mel_A.detach()))
         
@@ -220,8 +227,6 @@ for i in pbar:
         
         # Forward pass disc_B
         real_out_B = torch.squeeze(disc_B(real_mel_B))
-        real_A_buffer.push_and_pop(real_mel_A)  # Add real to buffer
-        recon_A_buffer.push_and_pop(recon_mel_A)  # Add recon to buffer
         fake_mel_B = fake_B_buffer.push_and_pop(fake_mel_B)
         fake_out_B = torch.squeeze(disc_B(fake_mel_B.detach()))
 
@@ -253,17 +258,7 @@ for i in pbar:
         train_hist['dec_BAB'].append(loss_cycle_BAB.item())
         train_hist['dec'].append(errDec.item())
         train_hist['disc_A'].append(errDisc_A.item())
-        train_hist['disc_B'].append(errDisc_B.item())    
-
-     # Save generator B2A output per epoch
-    d_in, d_recon, d_out, d_target = real_B_buffer.data[0], recon_B_buffer.data[0], fake_A_buffer.data[0], real_A_buffer.data[0]
-    mel_in, mel_recon, mel_out, mel_target = torch.squeeze(d_in).cpu().numpy(), torch.squeeze(d_recon).cpu().numpy(), torch.squeeze(d_out).cpu().numpy(), torch.squeeze(d_target).cpu().numpy()
-    show_mel_transfer(mel_in, mel_recon, mel_out, mel_target, pooldir + '/a/a_fake_epoch_'+ str(i) + '.png')
-    
-    # Save generator A2B output per epoch
-    d_in, d_recon, d_out, d_target = real_A_buffer.data[0], recon_A_buffer.data[0], fake_B_buffer.data[0], real_B_buffer.data[0]
-    mel_in, mel_recon, mel_out, mel_target = torch.squeeze(d_in).cpu().numpy(), torch.squeeze(d_recon).cpu().numpy(), torch.squeeze(d_out).cpu().numpy(), torch.squeeze(d_target).cpu().numpy()
-    show_mel_transfer(mel_in, mel_recon, mel_out, mel_target, pooldir + '/b/b_fake_epoch_'+ str(i) + '.png')
+        train_hist['disc_B'].append(errDisc_B.item())
     
     # Saving every 10 epochs (or on last epoch)
     if(i % 10 == 0 or i == 99):
