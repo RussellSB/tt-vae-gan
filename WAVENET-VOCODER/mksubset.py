@@ -27,7 +27,7 @@ import numpy as np
 
 def read_wav_or_raw(src_file, is_raw):
     if is_raw:
-        sr = 24000  # hard coded for now
+        sr = 16000  # hard coded for now
         x = np.fromfile(src_file, dtype=np.int16)
     else:
         sr, x = wavfile.read(src_file)
@@ -41,7 +41,7 @@ def write_wav_or_raw(dst_path, sr, x, is_raw):
         wavfile.write(dst_path, sr, x)
 
 if __name__ == "__main__":
-    args = docopt(__doc__)
+    args = docopt(__doc__, version='Naval Fate 2.0')
     in_dir = args["<in_dir>"]
     out_dir = args["<out_dir>"]
     limit = float(args["--limit"])
@@ -56,7 +56,7 @@ if __name__ == "__main__":
     raw_files = sorted(glob(join(in_dir, "*.raw")))
     is_raw = len(src_files) == 0 and len(raw_files) > 0
     if is_raw:
-        print("Assuming 24kHz /16bit audio data")
+        print("Assuming 16kHz audio data")
         src_files = raw_files
     if len(src_files) == 0:
         raise RuntimeError("No files found in {}".format(in_dir))

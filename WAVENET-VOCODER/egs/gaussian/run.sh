@@ -5,14 +5,13 @@ VOC_DIR=$script_dir/../../
 
 # Directory that contains all wav files
 # **CHANGE** this to your database path
-db_root='../../../pool/wavs-tt-2'
-
-spk="tt-2" # 'lj', 'tt', 'tt-2'
+db_root='../../../pool/wavs-tt-tpt'
+spk="tt-tpt" # 'fl-4', 'fl-7', 'tt-vn', 'tt-tpt'
 dumpdir=dump
 
 # train/dev/eval split
-dev_size=100
-eval_size=100
+dev_size=0.1
+eval_size=0.1
 # Maximum size of train/dev/eval data (in hours).
 # set small value (e.g. 0.2) for testing
 limit=1000000
@@ -72,8 +71,8 @@ if [ ${stage} -le 0 ] && [ ${stop_stage} -ge 0 ]; then
       echo "  Use option --db-root \${path_contains_wav_files}"
       exit 1
     fi
-    python $VOC_DIR/mksubset.py $db_root $data_root \
-      --train-dev-test-split --dev-size $dev_size --test-size $eval_size \
+    python $VOC_DIR/mksubset_custom.py $db_root $data_root \
+      --dev-size $dev_size --test-size $eval_size \
       --limit=$limit
 fi
 
@@ -101,12 +100,10 @@ fi
 
 if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
     echo "stage 2: WaveNet training"
-    echo CURRENTLY USING $expdir/checkpoint_step000361472.pth
     python $VOC_DIR/train.py --dump-root $dump_norm_dir --preset $hparams \
       --checkpoint-dir=$expdir \
-      --log-event-path=tensorboard/${expname}\
-      --checkpoint=$expdir/checkpoint_step000300000.pth 
-      # THIS IS TEMPORARY (REMOVE FOR OTHER TRAINING WAVENET EXPERIMENTS IMP)
+      --log-event-path=tensorboard/${expname}#\
+      #--checkpoint=$expdir/checkpoint_step000300000.pth 
 fi
 
 if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then

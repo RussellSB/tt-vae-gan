@@ -125,13 +125,6 @@ for i in pbar:
     
     pbar_sub = tqdm(range(0, max_duplets, batch_size),leave=False, desc='Batches')  # init batch pbar
     for j in pbar_sub:
-
-        # Resetting gradients
-        optim_enc.zero_grad()
-        optim_res.zero_grad()  
-        optim_dec.zero_grad() 
-        optim_disc_A.zero_grad()
-        optim_disc_B.zero_grad()
         
         # Loading real samples from each speaker in batches
         real_mel_A = melset_A_128[j : j + batch_size].to(device)
@@ -207,6 +200,11 @@ for i in pbar:
         # Latent loss
         loss_lat = loss_latent(mu_A, mu_B)
         
+        # Resetting gradients
+        optim_enc.zero_grad()
+        optim_res.zero_grad()  
+        optim_dec.zero_grad() 
+        
         # Backward pass for encoder and update all res/dec generator components
         errDec = loss_dec_A2B + loss_dec_B2A + loss_cycle_ABA + loss_cycle_BAB + loss_enc_B + loss_enc_A + loss_lat 
         errDec.backward()
@@ -235,6 +233,10 @@ for i in pbar:
         loss_D_real_B = loss_adversarial(real_out_B, real_label)
         loss_D_fake_B = loss_adversarial(fake_out_B, fake_label)
         errDisc_B = (loss_D_real_B + loss_D_fake_B) / 2
+                
+        # Resetting gradients
+        optim_disc_A.zero_grad()
+        optim_disc_B.zero_grad()
         
         # Backward pass and update all
         errDisc_A.backward()

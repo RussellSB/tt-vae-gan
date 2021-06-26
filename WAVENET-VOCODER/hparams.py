@@ -31,7 +31,7 @@ hparams = HParams(
 
     sample_rate=16000, #22050,
     # this is only valid for mulaw is True
-    silence_threshold=2,
+    silence_threshold=-1,  # previously 2
     num_mels=128, #80,
     fmin=0, #125,
     fmax=8000,

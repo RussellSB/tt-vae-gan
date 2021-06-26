@@ -33,4 +33,4 @@ num_res = 3  # number of resnet blocks for resnet phases (recommended minimum is
 res_type = 'basic'  # choose either ['basic', 'bottleneck']
 
 # Evaluate config
-infer_type = 'short'  #  long, short
+infer_type = 'long'  #  long, short

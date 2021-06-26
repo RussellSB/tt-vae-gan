@@ -5,7 +5,7 @@ VOC_DIR=$script_dir/../../
 
 # Directory that contains all wav files
 # **CHANGE** this to your database path
-db_root='../../../pool/wavs-full-test-4/'
+db_root='../../../pool/wavs-full-test-4-TEST/'
 datadir=lj # jj, tt, tt-2
 spk="test-4" # 'test-7, test-4, test-vn, test-tpt
 outdir=dump/$datadir/logmelspectrogram/norm/$spk

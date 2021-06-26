@@ -6,7 +6,7 @@
   "postprocess": "inv_preemphasis",
   "global_gain_scale": 0.55,
   "sample_rate": 16000,
-  "silence_threshold": 2,
+  "silence_threshold": -1,
   "num_mels": 128, 
   "fmin": 0, 
   "fmax": 8000, 
