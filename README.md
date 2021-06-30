@@ -1,4 +1,10 @@
-# vc-vae-cycle-gan (Work in Progress)
+# Update!
+
+Reaching out to Albadawy, he has released his codebase [here](https://github.com/ebadawy/voice_conversion). It achieves much better results than my from-scratch attempt (and is much cleaner). Currently, working with him by contributing to his codebase. I'm reimplementing some of my features for his official version. You can keep track of my progress [here](https://github.com/RussellSB/voice_conversion).
+
+Once I'm done with that I'll replace my current VC-VAE-GAN with the official. Should then be able to make this a seamless codebase (with some personal extensions/modifications from the original) and with wavenet code and instructions for melspectrogram inversion. 
+
+## vc-vae-cycle-gan (Work in Progress)
 
 ![Architecture](https://github.com/RussellSB/vc-vae-cycle-gan/blob/main/images/VC-VAE-CYCLE-GAN.JPG)
 
@@ -8,7 +14,7 @@ The current architecture only works with melspectrograms of a 128x128 size. Mels
 
 The ultimate scope of this project is to achieve replicable results, as well as also extend it to instrument timbre transfer for comparison purposes (voice conversion but in the context of instruments).
 
-## Showcase
+### Showcase
 
 Albeit not at the same high quality as AlBadawy, it achieves interpretable conversions:
 
@@ -26,13 +32,13 @@ Note that for below, Output is what is forward infered and Reconstructed input i
       <img width="660" height="400" src="https://github.com/RussellSB/vc-vae-cycle-gan/blob/main/images/b2a.png">
     </p>
 
-## Resources
+### Resources
 - [WaveNet Vocoder](https://github.com/r9y9/wavenet_vocoder)
 - [UNIT Repository](https://github.com/mingyuliutw/UNIT)
 - [Flickr Audio Corpus Dataset](https://groups.csail.mit.edu/sls/downloads/flickraudio/)
 
 
-## Brief Tutorial
+### Brief Tutorial
 1. First download the Flickr Audio Corpus Dataset
 2. Preprocess voice samples of the two speakers of interest using the implemented melspectrogram methodology of WaveNet
 3. In VAE-CYCLE-GAN, run preprocess.py with the path set as the preprocessing output of WAVENET-VOCODER
@@ -41,7 +47,7 @@ Note that for below, Output is what is forward infered and Reconstructed input i
 6. Ensure that WAVENET-VOCODER is trained on the same training set as VAE-CYCLE-GAN (May follow its respective repo for this)
 7. After this, from WAVENET-VOCODER run evaluate.py to infer audio from the generated melspectrograms
 
-## Further Notes
+### Further Notes
 - Can choose either 'bce', 'mse', or Wasserstenian mode for adversarial loss (currently mse is best)
 - In order to better fit a limited computational budget, can reduce number of residual blocks at the bottleneck in model.py
 - Discriminator will use sigmoid at end only if BCE (like DCGAN)
