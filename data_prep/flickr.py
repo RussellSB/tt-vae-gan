@@ -19,5 +19,6 @@ def flickr_prep_wavs(outdir, speaker_files, src):
         f = dataroot + 'wavs/' + filename.decode()   
         shutil.copy(f, outdir)
 
+# Preperation for preprocessing from VAEGAN repo
 flickr_prep_wavs(outdir+'spkr_1', speaker_files, 4)
 flickr_prep_wavs(outdir+'spkr_2', speaker_files, 7)

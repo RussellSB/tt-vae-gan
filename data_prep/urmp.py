@@ -19,5 +19,6 @@ def urmp_prep_wavs(outdir, instrument_files, src):
 trumpet_files = get_audiosep_ins('tpt')
 violin_files = get_audiosep_ins('vn')
 
+# Preperation for preprocessing from VAEGAN repo
 urmp_prep_wavs(outdir+'spkr_1', trumpet_files, 'tpt')
 urmp_prep_wavs(outdir+'spkr_2', violin_files, 'vn')
