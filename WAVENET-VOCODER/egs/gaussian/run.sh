@@ -5,8 +5,8 @@ VOC_DIR=$script_dir/../../
 
 # Directory that contains all wav files
 # **CHANGE** this to your database path
-db_root='../../../pool/wavs-tt-tpt'
-spk="tt-tpt" # 'fl-4', 'fl-7', 'tt-vn', 'tt-tpt'
+db_root='../../../pool/wavs-tt-vn'
+spk="tt-vn" # 'fl-4', 'fl-7', 'tt-vn', 'tt-tpt'
 dumpdir=dump
 
 # train/dev/eval split
