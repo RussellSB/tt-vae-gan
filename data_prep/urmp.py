@@ -2,11 +2,12 @@ import soundfile as sf
 from tqdm import tqdm
 import numpy as np
 import librosa
+import shutil
 import glob
 import os
 
 # Constants
-WAVPATH = '../pool/wavs-tt-tpt/' # the output directory
+WAVPATH = '../../ebagan-voice-conversion/db_urmp/spkr_1' # the output directory
 INS = 'tpt'
 MAX = 100000
 
@@ -51,13 +52,7 @@ def urmp_prep_wavs(outdir, instrument_files, src, max_amnt):
     amnt = 0
     for f in instrument_files:
         if amnt >= max_amnt: break
-        
-        filename = f.split('/')[-1]  # getting endpoint
-        filename = filename.split('.')[0]  # removing .wav from end
-        
-        x, sr = librosa.load(os.path.join(f), sr=16000)  # loads audio with librosa and downsamples it
-        x, index = librosa.effects.trim(x, top_db=20)  # trims out leading and trailing silence
-        subsample_x(x, outdir, filename, 128, 200, 16000)
+        shutil.copy(f, WAVPATH)
         amnt += 1
             
     print('Finished!')
