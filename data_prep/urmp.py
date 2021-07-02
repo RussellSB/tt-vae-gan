@@ -18,7 +18,7 @@ def get_audiosep_ins(ins):
 def urmp_prep_wavs(outdir, instrument_files, src):
     os.makedirs(outdir, exist_ok=True)
     for f in tqdm(instrument_files, desc="extracting ins %s"%src):
-        shutil.copy(f, outdir) # TODO - split wavs into approx 4 seconds each or something
+        shutil.copy(f, outdir)
         
 trumpet_files = get_audiosep_ins('tpt')
 violin_files = get_audiosep_ins('vn')
