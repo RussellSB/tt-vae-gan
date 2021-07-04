@@ -10,5 +10,5 @@ wavenet_vocoder/egs/exp/
 wavenet_vocoder/egs/exp/generated/
 wavenet_vocoder/egs/exp/intermediate/
 wavenet_vocoder/egs/tensorboard/
-data/
-
+voice_conversion/data/
+wavenet_vocoder/data/
