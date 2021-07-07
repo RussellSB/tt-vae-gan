@@ -10,7 +10,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--dataset", type=str, help="path to prepared dataset folder")
 parser.add_argument("--outdir", type=str, help="path to output directory")
 parser.add_argument("--tag", type=str, help="tag for datasource reference")
-parser.add_argument("--process", type=str, default=1, help="0 for copying files. 1 for processing files (useful when bitrate isn't 16).")
 args = parser.parse_args()
 print(args)
 
@@ -23,14 +22,7 @@ def to_wavenet(refs_spk, wavdir, outdir):
     os.makedirs(outdir, exist_ok=True)
     for fname in tqdm(refs_spk, total=len(refs_spk), desc='extracting to %s'%outdir):
         f = os.path.join(wavdir, fname)
-        
-        if not args.process:
-            shutil.copy(f, outdir)
-        else:
-            # Must ensure that bit rate is 16 for WaveNet 
-            out_f = os.path.join(outdir, fname)
-            data, samplerate = sf.read(f)
-            sf.write(out_f, data, 16000, subtype='PCM_16')
+        shutil.copy(f, outdir)
         
 
 # Data preparation
