@@ -3,4 +3,4 @@
 	url = https://github.com/RussellSB/voice_conversion
 [submodule "wavenet_vocoder"]
 	path = wavenet_vocoder
-	url = https://github.com/RussellSB/wavenet_vocoder
+	url = https://github.com/RussellSB/wavenet_vocoder.git
