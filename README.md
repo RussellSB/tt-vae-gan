@@ -20,7 +20,7 @@ Violin to Trumpet:
 
 ![vn_t_tpt](https://user-images.githubusercontent.com/35470600/127534790-75bfed70-64be-497d-9d87-7ec26e59ea7f.png)
 
-## Requirements
+## Hardware
 Recommended GPU VRAM per model:
 - voice_conversion - **2 GB**
 - wavenet_vocoder - **8 GB**
@@ -30,9 +30,13 @@ Recommended GPU VRAM per model:
 - If fad exceeds your computational resources, you can ignore it. It is not necessary for timbre transfer - only for evaluating it.
 - If wavenet_vocoder exceeds your resources, you can try a less computationally intense vocoder (such as [melgan](https://github.com/seungwonpark/melgan))
 
-## Setup
+# Tutorial
 
-Clone this repo as well as the sub modules for *voice_conversion* and *wavenet_vocoder* with git:
+Below is a brief tutorial on how you can use the submodules in conjunction with eachother. This is the pipeline I followed for my project. For more information - feel free to refer to the documentation in the originating repos, and raise an issue here or in *voice_conversion* if something is unclear / does not work.
+
+## 0. Setup
+
+1. Clone this repo as well as its sub modules for *voice_conversion* and *wavenet_vocoder* with git:
 
 ```
 git clone https://github.com/RussellSB/tt-vae-gan.git
@@ -41,10 +45,36 @@ git submodule init
 git submodule update
 ```
 
-# Tutorial
-
-Below is a brief tutorial on how you can use the submodules in conjunction with eachother. This is the pipeline I followed for my project. For more information - feel free to refer to the documentation in the originating repos, and raise an issue here or in *voice_conversion* if something is unclear / does not work.
+2. Ensure that your environment has installed the dependencies of the submodules that you will use.
 
 ## 1. VAE-GAN
+
+0. Download the dataset.
+
+1. Prepare your data.
+
+2. Preprocess your data
+
+3. Train on your data.
+
+4. Infer with VAE-GAN and reconstruct raw audio with Griffin Lim.
+
 ## 2. WaveNet
+
+1. Prepare your data again (based on data extracted for VAE-GAN).
+
+2. Preprocess your data again (based on WaveNet specs this time).
+
+3. Train a wavenet vocoder per timbre.
+
+4. Infer with style transferred Griffin Lim reconstructions as input to improve their perceptual quality.
+
 ## 3. FAD
+
+0. Download the VGGish model pretrained on AudioSet.
+
+1. Use it to embed real training data and estimate multivariate Gaussians.
+
+2. Use it to embed generated test data (post-WaveNet) and estimate multivariate Gaussians.
+
+3. Compute FAD between stats of the real and generated.
