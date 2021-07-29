@@ -1,6 +1,6 @@
 # Timbre Transfer with VAE-GAN & WaveNet
 
-This pipeline extends the work of [Albadawy & Lyu 2020](https://ebadawy.github.io/post/speech_style_transfer/Albadawy_et_al-2020-INTERSPEECH.pdf). The work I used this for shows (amongst other things) that their proposed **voice** conversion model is also applicable to context of musical instruments, therefore reforming the conversion to a more generalised audio style - **timbre**.
+This pipeline follows and extends the work of [Albadawy & Lyu 2020](https://ebadawy.github.io/post/speech_style_transfer/Albadawy_et_al-2020-INTERSPEECH.pdf). The work I used this for shows (amongst other things) that their proposed **voice** conversion model is also applicable to context of musical instruments, therefore reforming the conversion to a more generalised audio style - **timbre**.
 
 ## Summary
 The implemented pipeline makes use of the following submodules (click for orginating repos):
@@ -43,7 +43,7 @@ git submodule update
 
 # Tutorial
 
-Below is a brief tutorial on how you can use the submodules in conjunction with eachother. This is the pipeline I followed for my project. For more information - feel free to refer to the documentation in the originating repos, and raise an issue if something is unclear / does not work.
+Below is a brief tutorial on how you can use the submodules in conjunction with eachother. This is the pipeline I followed for my project. For more information - feel free to refer to the documentation in the originating repos, and raise an issue here or in *voice_conversion* if something is unclear / does not work.
 
 ## 1. VAE-GAN
 ## 2. WaveNet
