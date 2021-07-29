@@ -38,8 +38,6 @@ Recommended GPU VRAM per model:
 
 ## Tutorial
 
-Below is a brief tutorial on how you can use the submodules in conjunction with eachother. This is the pipeline I followed for my project. For more information - feel free to refer to the documentation in the originating repos, and raise an issue here or in *voice_conversion* if something is unclear / does not work.
-
 ### 0. Setup
 
 1. Clone this repo as well as its sub modules for *voice_conversion* and *wavenet_vocoder* with git:
