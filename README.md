@@ -32,7 +32,7 @@ Recommended GPU VRAM per model:
 
 ## Setup
 
-Clone this repo as well as the sub modules for voice_conversion and wavenet_vocoder with git:
+Clone this repo as well as the sub modules for *voice_conversion* and *wavenet_vocoder* with git:
 
 ```
 git clone https://github.com/RussellSB/tt-vae-gan.git
