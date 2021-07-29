@@ -8,6 +8,9 @@ The implemented pipeline makes use of the following submodules (click for orgina
 2. [wavenet_vocoder](https://github.com/r9y9/wavenet_vocoder) - Vocodes melspectrogram output from style transfer model to realistic audio.
 3. [fad](https://github.com/google-research/google-research/tree/master/frechet_audio_distance) - Computes Fréchet Audio Distance (using VGGish) to evaluate the quality of wavenet vocoder output.
 
+## Index
+- [Demo](#Demo)
+
 ## Demo
 
  *(Audio coming soon)*
