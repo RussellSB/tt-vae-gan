@@ -9,7 +9,10 @@ The implemented pipeline makes use of the following submodules (click for orgina
 3. [fad](https://github.com/google-research/google-research/tree/master/frechet_audio_distance) - Computes Fréchet Audio Distance (using VGGish) to evaluate the quality of wavenet vocoder output.
 
 ## Index
-- [Demo](#Demo)
+- [Demo](#demo)
+- [Hardware](#hardware)
+- [Tutorial](#tutorial)
+- [Pretrained Models](#pretrained-models)
 
 ## Demo
 
@@ -33,11 +36,11 @@ Recommended GPU VRAM per model:
 - If fad exceeds your computational resources, you can ignore it. It is not necessary for timbre transfer - only for evaluating it.
 - If wavenet_vocoder exceeds your resources, you can try a less computationally intense vocoder (such as [melgan](https://github.com/seungwonpark/melgan))
 
-# Tutorial
+## Tutorial
 
 Below is a brief tutorial on how you can use the submodules in conjunction with eachother. This is the pipeline I followed for my project. For more information - feel free to refer to the documentation in the originating repos, and raise an issue here or in *voice_conversion* if something is unclear / does not work.
 
-## 0. Setup
+### 0. Setup
 
 1. Clone this repo as well as its sub modules for *voice_conversion* and *wavenet_vocoder* with git:
 
@@ -50,7 +53,7 @@ git submodule update
 
 2. Ensure that your environment has installed the dependencies of the submodules that you will use.
 
-## 1. VAE-GAN
+### 1. VAE-GAN
 
 0. Download the dataset.
 
@@ -62,7 +65,7 @@ git submodule update
 
 4. Infer with VAE-GAN and reconstruct raw audio with Griffin Lim.
 
-## 2. WaveNet
+### 2. WaveNet
 
 1. Prepare your data again (based on data extracted for VAE-GAN).
 
@@ -72,7 +75,7 @@ git submodule update
 
 4. Infer with style transferred Griffin Lim reconstructions as input to improve their perceptual quality.
 
-## 3. FAD
+### 3. FAD
 
 0. Download the VGGish model pretrained on AudioSet.
 
@@ -81,3 +84,7 @@ git submodule update
 2. Use it to embed generated test data (post-WaveNet) and estimate multivariate Gaussians.
 
 3. Compute FAD between stats of the real and generated.
+
+## Pretrained Models
+
+*Coming Soon*
