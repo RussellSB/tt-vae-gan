@@ -73,6 +73,7 @@ python urmp --dataroot [path/to/urmp/]  # For URMP
 ```
 
 - By default this will output to ```voice_conversion/data/data_[name]/```. 
+- ```[name]``` would be either ```flickr``` or ```urmp```
 - You can add more timbres by duplicating lines 27-28 and changing each last argument to the timbre id of interest.
 
 #### 1.2. Preprocess your data
@@ -82,12 +83,12 @@ cd ../voice_conversion/src
 python preprocess.py --dataset ../data/data_[name]
 ````
 
-- Set more than two timbres by also adding ```--n_spkrs [int]```. By default ````n_spkrs=2``.
+- Set more than two timbres by also adding ```--n_spkrs [int]```. By default ```n_spkrs=2```.
 
 #### 1.3. Train on your data.
 
 ```
-python train.py --model_name [str] --dataset ../data/data_[name]
+python train.py --model_name [expname] --dataset ../data/data_[name]
 ```
 
 - Can set max epochs with ```--n_epochs [int]``` (100 default)
@@ -96,7 +97,7 @@ python train.py --model_name [str] --dataset ../data/data_[name]
 #### 1.4. Infer with VAE-GAN and reconstruct raw audio with Griffin Lim.
 
 ```
-python inference.py --model_name [str] --epoch [int] --trg_id A --src_id B --wavdir [path/to/testsetB]
+python inference.py --model_name [expname] --epoch [int] --trg_id 2 --src_id 1 --wavdir [path/to/testset_1]
 ```
 
 - Instead of ```--wavdir``` you can do ```--wav``` for a single file input.
@@ -106,13 +107,41 @@ python inference.py --model_name [str] --epoch [int] --trg_id A --src_id B --wav
 
 ### 2. WaveNet
 
-1. Prepare your data again (based on data extracted for VAE-GAN).
+#### 1. Prepare your data again (based on data extracted for VAE-GAN).
 
-2. Preprocess your data again (based on WaveNet specs this time).
+```
+cd ../../data_prep
+python wavenet.py --dataset ../voice_conversion/data/data_[name] --outdir ../wavenet_vocoder/egs/gaussian/data --tag [name]
+```
 
-3. Train a wavenet vocoder per timbre.
+#### 2. Preprocess your data again (based on WaveNet specs this time).
 
-4. Infer with style transferred Griffin Lim reconstructions as input to improve their perceptual quality.
+```
+cd ../wavenet_vocoder/egs/gaussian
+spk="[name]_[id]" ./run.sh --stage 1 --stop-stage 1
+```
+
+- For two speakers ids this would be either ```1``` or ```2```.
+- You need to run the .sh command for each target timbre.
+
+#### 3. Train a wavenet vocoder.
+
+```
+spk="[name]_2" hparams=conf/[name].json ./run.sh --stage 2 --stop-stage 2 
+```
+
+- Just like preprocessing, you need to run this for each target timbre.
+- You can add ```CUDA_VISIBLE_DEVICES="0,1"``` before ```./run.sh``` if you have two GPUs (training takes quite long)
+
+#### 4. Infer style transferred reconstructions to improve their perceptual quality.
+
+```
+spk="[name]_1" inferdir="[expname]_[epoch]_G[id]_S[id]" hparams=conf/flickr.json ./infer.sh
+```
+
+- G[id] is the target id. S[id] is the source id.
+- For example, for transfer from ids 1-to-2 with experiment 'initial' and trained VAE-GAN after epoch 99, ```inferdir="initial_99_G2_S1"```
+- You can also add ```CUDA_VISIBLE_DEVICES="0,1"``` before ```./infer.sh``` (inferring takes quite long)
 
 ### 3. FAD
 
