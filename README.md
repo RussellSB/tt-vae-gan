@@ -150,13 +150,43 @@ spk="[name]_[id_2]" inferdir="[expname]_[epoch]_G[id_2]_S[id_1]" hparams=conf/fl
 
 ### 3. FAD
 
-0. Download the VGGish model pretrained on AudioSet.
+#### 0. Download the VGGish model pretrained on AudioSet.
 
-1. Use it to embed real training data and estimate multivariate Gaussians.
+```
+cd ../../../fad
+mkdir -p data
+curl -o data/vggish_model.ckpt https://storage.googleapis.com/audioset/vggish_model.ckpt
+```
 
-2. Use it to embed generated test data (post-WaveNet) and estimate multivariate Gaussians.
+#### 1. Create csvs for referencing files of timbre sets (real train set, then fake test set, both of same target timbre)
 
-3. Compute FAD between stats of the real and generated.
+```
+ls --color=never ../wavenet_vocoder/egs/gaussian/data/[name]_[id_2]/train_no_dev/*.wav  > test_audio/[name]_[id_2].csv
+ls --color=never ../wavenet_vocoder/egs/gaussian/out/[name]_[id_2]_[expname]_[epoch]_G[id_2]_S[id_1]/*_gen.wav > test_audio/[name]_[id_2]_[expname]_[epoch]_G[id_2]_S[id_1].csv
+```
+
+#### 2. Embed each of the timbre sets with VGGish
+
+```
+mkdir -p stats
+python frechet_audio_distance.create_embeddings_main  --input_files test_audio/[name]_[id_2].csv \                        
+                                                      --stats stats/[name]_[id_2]_stats
+                                                      
+python frechet_audio_distance.create_embeddings_main  --input_files test_audio/[name]_[id_2]_[expname]_[epoch]_G[id_2].csv \
+                                                      --stats stats/[name]_[id_2]_[expname]_[epoch]_G[id_2]_S[id_1]_stats
+```
+
+- Run the python command for the train set and test set
+- Can add ```CUDA_VISIBLE_DEVICES="0,1"``` before python if possible (embedding takes a while)
+
+#### 3. Compute Frechet Distance between stats of the real and generated.
+
+```
+python -m frechet_audio_distance.compute_fad  --background_stats stats/[name]_[id_2]_stats 
+                                              --test_stats stats/[name]_[id_2]_[expname]_[epoch]_G[id_2]_S[id_1]_stats
+```
+
+- Background refers to the real training set
 
 ## Pretrained Models
 
