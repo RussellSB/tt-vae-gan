@@ -33,6 +33,7 @@ Recommended GPU VRAM per model:
 - fad - **16 GB** 
 
 ### Note
+- Keep in mind that if you train in a mnay to many context (ie more than 2 timbres) you may need more VRAM for *voice_conversion*
 - If fad exceeds your computational resources, you can ignore it. It is not necessary for timbre transfer - only for evaluating it.
 - If wavenet_vocoder exceeds your resources, you can try a less computationally intense vocoder (such as [melgan](https://github.com/seungwonpark/melgan))
 
@@ -53,11 +54,30 @@ git submodule update
 
 ### 1. VAE-GAN
 
-0. Download the dataset.
+#### 0. Download the dataset. 
 
-1. Prepare your data.
+Choose:
 
-2. Preprocess your data
+- Flickr 8k Audio for speakers ([link](https://groups.csail.mit.edu/sls/downloads/flickraudio/))
+- URMP for instruments ([link](http://www2.ece.rochester.edu/projects/air/projects/URMP.html))
+
+
+#### 1. Prepare your data. 
+
+Run one of the python commands for extracting timbre files of interest:
+
+```
+cd data_prep
+python flickr --dataroot [path/to/flickr_audio/flickr_audio/]  # For Flickr
+python urmp --dataroot [path/to/urmp/]  # For URMP
+```
+
+- By default this will output to ```voice_conversion/data/data_[name]/```. 
+- You can add more timbres by duplicating lines 27-28 and changing each last argument to the timbre id of interest.
+
+#### 2. Preprocess your data
+
+
 
 3. Train on your data.
 
