@@ -73,7 +73,7 @@ python urmp --dataroot [path/to/urmp/]  # For URMP
 ```
 
 - By default this will output to ```voice_conversion/data/data_[name]/```. 
-- You can add more timbres by duplicating lines 27-28 and changing each last argument to the timbre id of interest.
+- You can add more timbres by duplicating lines 27-28 and changing each last argument to the timbre id of interest. In choosing more ids, refer to the dataset's respective documentation.
 
 #### 2. Preprocess your data
 
