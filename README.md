@@ -104,7 +104,7 @@ python inference.py --model_name [expname] --epoch [int] --trg_id 2 --src_id 1 -
 
 - Instead of ```--wavdir``` you can do ```--wav``` for a single file input.
 - Since only the data prep for wavenet creates audio directories for each train/eval/test split, use that.
-- Do step 2.1. then come back to this. Can then set something like ```--wavdir ../../wavenet_vocoder/egs/gaussian/data/flickr_2/eval```
+- Do step 2.1. then come back to this. Can then set something like ```--wavdir ../../wavenet_vocoder/egs/gaussian/data/flickr_2/eval```.
 
 ---
 
@@ -134,7 +134,7 @@ spk="[name]_[id]" hparams=conf/[name].json ./run.sh --stage 2 --stop-stage 2
 ```
 
 - Just like preprocessing, you need to run this for each target timbre.
-- You can add ```CUDA_VISIBLE_DEVICES="0,1"``` before ```./run.sh``` if you have two GPUs (training takes quite long)
+- You can add ```CUDA_VISIBLE_DEVICES="0,1"``` before ```./run.sh``` if you have two GPUs (training takes quite long).
 
 #### 2.4. Infer style transferred reconstructions to improve their perceptual quality.
 
@@ -143,8 +143,8 @@ spk="[name]_[id_2]" inferdir="[expname]_[epoch]_G[id_2]_S[id_1]" hparams=conf/fl
 ```
 
 - [id_2] is the target id. [id_1] is the source id.
-- For example, for transfer from ids 1-to-2 with experiment 'initial' and trained VAE-GAN after epoch 99, ```inferdir="initial_99_G2_S1"```
-- You can also add ```CUDA_VISIBLE_DEVICES="0,1"``` before ```./infer.sh``` (inferring takes quite long)
+- For example, for transfer from ids 1-to-2 with experiment 'initial' and trained VAE-GAN after epoch 99, ```inferdir="initial_99_G2_S1"```.
+- You can also add ```CUDA_VISIBLE_DEVICES="0,1"``` before ```./infer.sh``` (inferring takes quite long).
 
 ---
 
@@ -186,8 +186,8 @@ python -m frechet_audio_distance.compute_fad  --background_stats stats/[name]_[i
                                               --test_stats stats/[name]_[id_2]_[expname]_[epoch]_G[id_2]_S[id_1]_stats
 ```
 
-- Background refers to the real training audio set
-- Test refers to the fake style transferred audio set
+- Background refers to the real training audio set.
+- Test refers to the fake style transferred audio set.
 
 ## Pretrained Models
 
