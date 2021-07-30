@@ -107,14 +107,14 @@ python inference.py --model_name [expname] --epoch [int] --trg_id 2 --src_id 1 -
 
 ### 2. WaveNet
 
-#### 1. Prepare your data again (based on data extracted for VAE-GAN).
+#### 2.1. Prepare your data again (based on data extracted for VAE-GAN).
 
 ```
 cd ../../data_prep
 python wavenet.py --dataset ../voice_conversion/data/data_[name] --outdir ../wavenet_vocoder/egs/gaussian/data --tag [name]
 ```
 
-#### 2. Preprocess your data again (based on WaveNet specs this time).
+#### 2.2. Preprocess your data again (based on WaveNet specs this time).
 
 ```
 cd ../wavenet_vocoder/egs/gaussian
@@ -124,7 +124,7 @@ spk="[name]_[id]" ./run.sh --stage 1 --stop-stage 1
 - For two speakers ids this would be either ```1``` or ```2```.
 - You need to run the .sh command for each target timbre.
 
-#### 3. Train a wavenet vocoder.
+#### 2.3. Train a wavenet vocoder.
 
 ```
 spk="[name]_2" hparams=conf/[name].json ./run.sh --stage 2 --stop-stage 2 
@@ -133,7 +133,7 @@ spk="[name]_2" hparams=conf/[name].json ./run.sh --stage 2 --stop-stage 2
 - Just like preprocessing, you need to run this for each target timbre.
 - You can add ```CUDA_VISIBLE_DEVICES="0,1"``` before ```./run.sh``` if you have two GPUs (training takes quite long)
 
-#### 4. Infer style transferred reconstructions to improve their perceptual quality.
+#### 2.4. Infer style transferred reconstructions to improve their perceptual quality.
 
 ```
 spk="[name]_1" inferdir="[expname]_[epoch]_G[id]_S[id]" hparams=conf/flickr.json ./infer.sh
