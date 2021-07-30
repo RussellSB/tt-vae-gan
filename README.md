@@ -105,6 +105,7 @@ python inference.py --model_name [expname] --epoch [int] --trg_id 2 --src_id 1 -
 - Instead of ```--wavdir``` you can do ```--wav``` for a single file input.
 - Since only the data prep for wavenet creates audio directories for each train/eval/test split, use that.
 - Do step 2.1. then come back to this. Can then set something like ```--wavdir ../../wavenet_vocoder/egs/gaussian/data/flickr_2/eval```.
+- Griffin Lim reconstructions are low quality, but will be improved to sufficient realism when passed to WaveNet vocoder.
 
 ---
 
