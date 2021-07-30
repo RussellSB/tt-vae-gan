@@ -127,7 +127,7 @@ spk="[name]_[id]" ./run.sh --stage 1 --stop-stage 1
 #### 2.3. Train a wavenet vocoder.
 
 ```
-spk="[name]_2" hparams=conf/[name].json ./run.sh --stage 2 --stop-stage 2 
+spk="[name]_[id]" hparams=conf/[name].json ./run.sh --stage 2 --stop-stage 2 
 ```
 
 - Just like preprocessing, you need to run this for each target timbre.
@@ -136,10 +136,10 @@ spk="[name]_2" hparams=conf/[name].json ./run.sh --stage 2 --stop-stage 2
 #### 2.4. Infer style transferred reconstructions to improve their perceptual quality.
 
 ```
-spk="[name]_1" inferdir="[expname]_[epoch]_G[id]_S[id]" hparams=conf/flickr.json ./infer.sh
+spk="[name]_[id_2]" inferdir="[expname]_[epoch]_G[id_2]_S[id_1]" hparams=conf/flickr.json ./infer.sh
 ```
 
-- G[id] is the target id. S[id] is the source id.
+- [id_2] is the target id. [id_1] is the source id.
 - For example, for transfer from ids 1-to-2 with experiment 'initial' and trained VAE-GAN after epoch 99, ```inferdir="initial_99_G2_S1"```
 - You can also add ```CUDA_VISIBLE_DEVICES="0,1"``` before ```./infer.sh``` (inferring takes quite long)
 
