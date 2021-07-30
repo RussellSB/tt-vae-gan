@@ -33,9 +33,9 @@ Recommended GPU VRAM per model:
 - fad - **16 GB** 
 
 ### Note
-- Keep in mind that if you train in a mnay to many context (ie more than 2 timbres) you may need more VRAM for *voice_conversion*
-- If fad exceeds your computational resources, you can ignore it. It is not necessary for timbre transfer - only for evaluating it.
+- If you train many-to-many (more than 2 timbres) you may need more GPU VRAM GBs for *voice_conversion*
 - If wavenet_vocoder exceeds your resources, you can try a less computationally intense vocoder (such as [melgan](https://github.com/seungwonpark/melgan))
+- If fad exceeds your computational resources, you can ignore it. It is not necessary for timbre transfer - only for evaluating it.
 
 ## Tutorial
 
