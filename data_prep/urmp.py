@@ -26,3 +26,5 @@ violin_files = get_audiosep_ins('vn')
 # Data preparation
 urmp_prep_wavs(args.outdir+'spkr_1', trumpet_files, 'tpt')
 urmp_prep_wavs(args.outdir+'spkr_2', violin_files, 'vn')
+#urmp_prep_wavs(args.outdir+'spkr_3', flute_files, 'fl')  # uncomment to include flute
+#urmp_prep_wavs(args.outdir+'spkr_4', cello_files, 'vc')  # uncomment to include cello
