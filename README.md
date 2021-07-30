@@ -52,6 +52,8 @@ git submodule update
 
 0.2. Ensure that your environment has installed the dependencies of the submodules.
 
+---
+
 ### 1. VAE-GAN
 
 #### 1.0. Download the dataset. 
@@ -104,6 +106,7 @@ python inference.py --model_name [expname] --epoch [int] --trg_id 2 --src_id 1 -
 - Since only the data prep for wavenet creates audio directories for each train/eval/test split, use that.
 - Do step 2.1. then come back to this. Can then set something like ```--wavdir ../../wavenet_vocoder/egs/gaussian/data/flickr_2/eval```
 
+---
 
 ### 2. WaveNet
 
@@ -142,6 +145,8 @@ spk="[name]_[id_2]" inferdir="[expname]_[epoch]_G[id_2]_S[id_1]" hparams=conf/fl
 - [id_2] is the target id. [id_1] is the source id.
 - For example, for transfer from ids 1-to-2 with experiment 'initial' and trained VAE-GAN after epoch 99, ```inferdir="initial_99_G2_S1"```
 - You can also add ```CUDA_VISIBLE_DEVICES="0,1"``` before ```./infer.sh``` (inferring takes quite long)
+
+---
 
 ### 3. FAD
 
