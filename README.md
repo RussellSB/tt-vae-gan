@@ -41,7 +41,7 @@ Recommended GPU VRAM per model:
 
 ### 0. Setup
 
-1. Clone this repo as well as its sub modules for *voice_conversion* and *wavenet_vocoder* with git:
+0.1. Clone this repo as well as its sub modules for *voice_conversion* and *wavenet_vocoder* with git:
 
 ```
 git clone https://github.com/RussellSB/tt-vae-gan.git
@@ -50,11 +50,11 @@ git submodule init
 git submodule update
 ```
 
-2. Ensure that your environment has installed the dependencies of the submodules.
+0.2. Ensure that your environment has installed the dependencies of the submodules.
 
 ### 1. VAE-GAN
 
-#### 0. Download the dataset. 
+#### 1.0. Download the dataset. 
 
 Choose:
 
@@ -62,7 +62,7 @@ Choose:
 - URMP for instruments ([link](http://www2.ece.rochester.edu/projects/air/projects/URMP.html))
 
 
-#### 1. Prepare your data. 
+#### 1.1. Prepare your data. 
 
 Run one of the python commands for extracting timbre files of interest:
 
@@ -75,13 +75,34 @@ python urmp --dataroot [path/to/urmp/]  # For URMP
 - By default this will output to ```voice_conversion/data/data_[name]/```. 
 - You can add more timbres by duplicating lines 27-28 and changing each last argument to the timbre id of interest.
 
-#### 2. Preprocess your data
+#### 1.2. Preprocess your data
 
+````
+cd ../voice_conversion/src
+python preprocess.py --dataset ../data/data_[name]
+````
 
+- Set more than two timbres by also adding ```--n_spkrs [int]```. By default ````n_spkrs=2``.
 
-3. Train on your data.
+#### 1.3. Train on your data.
 
-4. Infer with VAE-GAN and reconstruct raw audio with Griffin Lim.
+```
+python train.py --model_name [str] --dataset ../data/data_[name]
+```
+
+- Can set max epochs with ```--n_epochs [int]``` (100 default)
+- Can set how often to save models with ```--checkpoint_interval [int]``` (1 epoch by default)
+
+#### 1.4. Infer with VAE-GAN and reconstruct raw audio with Griffin Lim.
+
+```
+python inference.py --model_name [str] --epoch [int] --trg_id A --src_id B --wavdir [path/to/testsetB]
+```
+
+- Instead of ```--wavdir``` you can do ```--wav``` for a single file input.
+- Since only the data prep for wavenet creates audio directories for each train/eval/test split, use that.
+- Do step 2.1. then come back to this. Can then set something like ```--wavdir ../../wavenet_vocoder/egs/gaussian/data/flickr_2/eval```
+
 
 ### 2. WaveNet
 
