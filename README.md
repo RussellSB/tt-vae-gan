@@ -150,7 +150,7 @@ spk="[name]_[id_2]" inferdir="[expname]_[epoch]_G[id_2]_S[id_1]" hparams=conf/fl
 
 ### 3. FAD
 
-#### 0. Download the VGGish model pretrained on AudioSet.
+#### 3.0. Download the VGGish model pretrained on AudioSet.
 
 ```
 cd ../../../fad
@@ -158,14 +158,14 @@ mkdir -p data
 curl -o data/vggish_model.ckpt https://storage.googleapis.com/audioset/vggish_model.ckpt
 ```
 
-#### 1. Create csvs for referencing files of timbre sets (real train set, then fake test set, both of same target timbre)
+#### 3.1. Create csvs for referencing files of timbre sets (real train set, then fake test set, both of same target timbre)
 
 ```
 ls --color=never ../wavenet_vocoder/egs/gaussian/data/[name]_[id_2]/train_no_dev/*.wav  > test_audio/[name]_[id_2].csv
 ls --color=never ../wavenet_vocoder/egs/gaussian/out/[name]_[id_2]_[expname]_[epoch]_G[id_2]_S[id_1]/*_gen.wav > test_audio/[name]_[id_2]_[expname]_[epoch]_G[id_2]_S[id_1].csv
 ```
 
-#### 2. Embed each of the timbre sets with VGGish
+#### 3.2. Embed each of the timbre sets with VGGish
 
 ```
 mkdir -p stats
@@ -179,7 +179,7 @@ python frechet_audio_distance.create_embeddings_main  --input_files test_audio/[
 - Run the python command for the train set and test set
 - Can add ```CUDA_VISIBLE_DEVICES="0,1"``` before python if possible (embedding takes a while)
 
-#### 3. Compute Frechet Distance between stats of the real and generated.
+#### 3.3. Compute Frechet Distance between stats of the real and generated.
 
 ```
 python -m frechet_audio_distance.compute_fad  --background_stats stats/[name]_[id_2]_stats 
