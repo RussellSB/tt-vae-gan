@@ -50,7 +50,7 @@ git submodule init
 git submodule update
 ```
 
-2. Ensure that your environment has installed the dependencies of the submodules that you will use.
+2. Ensure that your environment has installed the dependencies of the submodules.
 
 ### 1. VAE-GAN
 
