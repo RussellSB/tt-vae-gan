@@ -220,7 +220,7 @@ With respect to the current data preperation set up, the following models were t
 
 1. Create directory ```voice_conversion/src/saved_models/initial```.
 2. Drag .pth files to that directory.
-3. Call with ```--model_name initial --epoch 99``` for inference.
+3. Call with ```--model_name initial --epoch 99``` for inference (with epoch 490 for URMP).
 
 Notes
 - G1 is female for Flickr, trumpet for URMP.
