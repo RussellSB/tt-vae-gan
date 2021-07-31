@@ -235,4 +235,4 @@ Notes
 Notes
 - flickr_1 is female, flickr_2 is male.
 - urmp_1 is trumpet, urmp_2 is violin.
-- inferdir is just a local directory in ```voice_conversion/src/out_infer/```. You can set it to any local dir with in that path.
+- inferdir is just a local directory in ```voice_conversion/src/out_infer/```. You can point it to any local dir within that path for input.
