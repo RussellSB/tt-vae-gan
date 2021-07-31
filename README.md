@@ -190,6 +190,8 @@ python -m frechet_audio_distance.compute_fad  --background_stats stats/[name]_[i
 - Background refers to the real training audio set.
 - Test refers to the fake style transferred audio set.
 
+---
+
 ## Pretrained Models
 
 With respect to the current data preperation set up, the following models were trained:
