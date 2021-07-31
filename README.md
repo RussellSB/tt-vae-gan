@@ -213,7 +213,7 @@ Notes
 
 #### Pretrained WaveNet
 
-1. Create directory ``````wavenet_vocoder/egs/gaussian/exp/```
+1. Create directory ```wavenet_vocoder/egs/gaussian/exp/```
 2. Drag the folder such as ```flickr_1_train_no_dev_flickr``` into that directory.
 3. Call ./infer.sh with appropriate arguments such as ```spk="flickr_1" inferdir="initial_99_G1_S2"```.
 
