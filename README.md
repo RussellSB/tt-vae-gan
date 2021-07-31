@@ -78,6 +78,21 @@ python urmp --dataroot [path/to/urmp/]  # For URMP
 - ```[name]``` would be either ```flickr``` or ```urmp```
 - You can add more timbres by duplicating lines 27-28 and changing each last argument to the timbre id of interest.
 
+Alternatively, you can use your own dataset. Just set it up so that in ```voice_conversion/data/data_mydataset``` you have the following structure:
+
+```bash
+/path/to/database
+├── spkr_1
+│   ├── sample.wav
+├── spkr_2
+│   ├── sample.wav
+│   ...
+└── spkr_N
+    ├── sample.wav
+    ...
+# The directory under each speaker cannot be nested.
+```
+
 #### 1.2. Preprocess your data
 
 ````
