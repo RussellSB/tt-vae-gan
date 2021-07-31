@@ -62,6 +62,7 @@ Choose:
 
 - Flickr 8k Audio for speakers ([link](https://groups.csail.mit.edu/sls/downloads/flickraudio/))
 - URMP for instruments ([link](http://www2.ece.rochester.edu/projects/air/projects/URMP.html))
+- Other
 
 
 #### 1.1. Prepare your data. 
