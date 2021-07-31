@@ -192,4 +192,30 @@ python -m frechet_audio_distance.compute_fad  --background_stats stats/[name]_[i
 
 ## Pretrained Models
 
-*Coming Soon*
+With respect to the current data preperation set up, the following models were trained:
+
+|  Model  |                                      Flickr                                      |                                       URMP                                       |
+|:-------:|:--------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------:|
+| VAE-GAN | [link](https://drive.google.com/drive/folders/1Wui2Pt4sOBl71exRh49GX_JEBpFv_vNg) | [link](https://drive.google.com/drive/folders/1Nq3tKE-kcoMOw5AYEa0qWddxwbUYL8aA) |
+| WaveNet | [link](https://drive.google.com/drive/folders/1uK_mAfA24sXkru7hmBLJCtqRQIq43zNx) | [link](https://drive.google.com/drive/folders/1RZhP6UFiJjZBYL4JyIf4tOTa1RrX-l0a) |
+
+#### Pretrained VAE-GAN
+
+1. Create directory ```voice_conversion/src/saved_models/initial```.
+2. Drag .pth files to that directory.
+3. Call with ```--model_name initial --epoch 99``` for inference.
+
+Notes
+- G1 is female for Flickr, trumpet for URMP.
+- G2 is male for Flickr, violin for URMP.
+
+#### Pretrained WaveNet
+
+1. Create directory ``````wavenet_vocoder/egs/gaussian/exp/```
+2. Drag the folder such as ```flickr_1_train_no_dev_flickr``` into that directory.
+3. Call ./infer.sh with appropriate arguments such as ```spk="flickr_1" inferdir="initial_99_G1_S2"```.
+
+Notes
+- flickr_1 is female, flickr_2 is male.
+- urmp_1 is trumpet, urmp_2 is violin.
+- inferdir is just a local directory in ```voice_conversion/src/out_infer/```. You can set it to any local dir with in that path.
