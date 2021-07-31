@@ -81,7 +81,7 @@ python urmp --dataroot [path/to/urmp/]  # For URMP
 Alternatively, you can use your own dataset. Just set it up so that in ```voice_conversion/data/data_mydataset``` you have the following structure:
 
 ```bash
-/path/to/database
+voice_conversion/data/data_mydataset
 ├── spkr_1
 │   ├── sample.wav
 ├── spkr_2
