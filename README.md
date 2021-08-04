@@ -186,11 +186,11 @@ ls --color=never ../wavenet_vocoder/egs/gaussian/out/[name]_[id_2]_[expname]_[ep
 
 ```
 mkdir -p stats
-python -m frechet_audio_distance.create_embeddings_main  --input_files test_audio/[name]_[id_2].csv \                        
-                                                      --stats stats/[name]_[id_2]_stats
+python -m frechet_audio_distance.create_embeddings_main  --input_files test_audio/[name]_[id_2].csv \
+                                                        --stats stats/[name]_[id_2]_stats
                                                       
 python -m frechet_audio_distance.create_embeddings_main  --input_files test_audio/[name]_[id_2]_[expname]_[epoch]_G[id_2].csv \
-                                                      --stats stats/[name]_[id_2]_[expname]_[epoch]_G[id_2]_S[id_1]_stats
+                                                        --stats stats/[name]_[id_2]_[expname]_[epoch]_G[id_2]_S[id_1]_stats
 ```
 
 - Run the python command for the train set and test set
@@ -199,8 +199,8 @@ python -m frechet_audio_distance.create_embeddings_main  --input_files test_audi
 #### 3.3. Compute Frechet Distance between stats of the real and generated.
 
 ```
-python -m frechet_audio_distance.compute_fad  --background_stats stats/[name]_[id_2]_stats 
-                                              --test_stats stats/[name]_[id_2]_[expname]_[epoch]_G[id_2]_S[id_1]_stats
+python -m frechet_audio_distance.compute_fad --background_stats stats/[name]_[id_2]_stats \
+                                             --test_stats stats/[name]_[id_2]_[expname]_[epoch]_G[id_2]_S[id_1]_stats
 ```
 
 - Background refers to the real training audio set.
