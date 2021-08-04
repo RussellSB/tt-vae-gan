@@ -186,10 +186,10 @@ ls --color=never ../wavenet_vocoder/egs/gaussian/out/[name]_[id_2]_[expname]_[ep
 
 ```
 mkdir -p stats
-python frechet_audio_distance.create_embeddings_main  --input_files test_audio/[name]_[id_2].csv \                        
+python -m frechet_audio_distance.create_embeddings_main  --input_files test_audio/[name]_[id_2].csv \                        
                                                       --stats stats/[name]_[id_2]_stats
                                                       
-python frechet_audio_distance.create_embeddings_main  --input_files test_audio/[name]_[id_2]_[expname]_[epoch]_G[id_2].csv \
+python -m frechet_audio_distance.create_embeddings_main  --input_files test_audio/[name]_[id_2]_[expname]_[epoch]_G[id_2].csv \
                                                       --stats stats/[name]_[id_2]_[expname]_[epoch]_G[id_2]_S[id_1]_stats
 ```
 
