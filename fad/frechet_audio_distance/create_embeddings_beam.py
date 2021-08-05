@@ -33,6 +33,8 @@ import scipy.io.wavfile
 import scipy.spatial.distance
 import tensorflow.compat.v1 as tf
 
+import librosa
+
 from frechet_audio_distance.audioset_model import AudioSetModel
 
 
@@ -295,7 +297,7 @@ class ReadWavFiles(beam.DoFn):
 
   def process(self, element):
     """See base class."""
-    _, data = scipy.io.wavfile.read(element)
+    data, _ = librosa.load(element, 16000)
     example = create_audio_example('audio/reference/raw_audio', data, element)
     yield element, example
 
