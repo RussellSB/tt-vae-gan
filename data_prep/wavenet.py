@@ -10,7 +10,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--dataset", type=str, help="path to prepared dataset folder")
 parser.add_argument("--outdir", type=str, help="path to output directory")
 parser.add_argument("--tag", type=str, help="tag for datasource reference")
-parser.add_argument("--mode", type=int, default=0, help="0 for training generally on all domains. 1 for training specific to a domain.")
+parser.add_argument("--mode", type=int, default=1, help="0 for training vocoder generally on all domains. 1 for training vo specific to a domain.")
 args = parser.parse_args()
 print(args)
 
