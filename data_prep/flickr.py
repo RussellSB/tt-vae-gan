@@ -26,3 +26,5 @@ def flickr_prep_wavs(outdir, speaker_files, src):
 # Data preparation
 flickr_prep_wavs(args.outdir+'spkr_1', speaker_files, 4)
 flickr_prep_wavs(args.outdir+'spkr_2', speaker_files, 7)
+#flickr_prep_wavs(args.outdir+'spkr_3', speaker_files, 49)  # uncomment to include another female
+#flickr_prep_wavs(args.outdir+'spkr_4', speaker_files, 17)  # uncomment to include another male
