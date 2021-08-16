@@ -30,7 +30,7 @@ Violin to Trumpet:
 Recommended GPU VRAM per model:
 - voice_conversion - **2 GB**
 - wavenet_vocoder - **8 GB**
-- fad - **16 GB** 
+- fad - **24 GB** 
 
 ### Note
 - If you train many-to-many (more than 2 timbres) you may need a stronger GPU for *voice_conversion*
@@ -62,6 +62,7 @@ Choose:
 
 - Flickr 8k Audio for speakers ([link](https://groups.csail.mit.edu/sls/downloads/flickraudio/))
 - URMP for instruments ([link](http://www2.ece.rochester.edu/projects/air/projects/URMP.html))
+- Other
 
 
 #### 1.1. Prepare your data. 
@@ -77,6 +78,21 @@ python urmp --dataroot [path/to/urmp/]  # For URMP
 - By default this will output to ```voice_conversion/data/data_[name]/```. 
 - ```[name]``` would be either ```flickr``` or ```urmp```
 - You can add more timbres by duplicating lines 27-28 and changing each last argument to the timbre id of interest.
+
+Alternatively, you can use your own dataset. Just set it up so that in ```voice_conversion/data/data_mydataset``` you have the following structure:
+
+```bash
+voice_conversion/data/data_mydataset
+├── spkr_1
+│   ├── sample.wav
+├── spkr_2
+│   ├── sample.wav
+│   ...
+└── spkr_N
+    ├── sample.wav
+    ...
+# The directory under each speaker cannot be nested.
+```
 
 #### 1.2. Preprocess your data
 
@@ -170,11 +186,11 @@ ls --color=never ../wavenet_vocoder/egs/gaussian/out/[name]_[id_2]_[expname]_[ep
 
 ```
 mkdir -p stats
-python frechet_audio_distance.create_embeddings_main  --input_files test_audio/[name]_[id_2].csv \                        
-                                                      --stats stats/[name]_[id_2]_stats
+python -m frechet_audio_distance.create_embeddings_main  --input_files test_audio/[name]_[id_2].csv \
+                                                        --stats stats/[name]_[id_2]_stats
                                                       
-python frechet_audio_distance.create_embeddings_main  --input_files test_audio/[name]_[id_2]_[expname]_[epoch]_G[id_2].csv \
-                                                      --stats stats/[name]_[id_2]_[expname]_[epoch]_G[id_2]_S[id_1]_stats
+python -m frechet_audio_distance.create_embeddings_main  --input_files test_audio/[name]_[id_2]_[expname]_[epoch]_G[id_2].csv \
+                                                        --stats stats/[name]_[id_2]_[expname]_[epoch]_G[id_2]_S[id_1]_stats
 ```
 
 - Run the python command for the train set and test set
@@ -183,13 +199,41 @@ python frechet_audio_distance.create_embeddings_main  --input_files test_audio/[
 #### 3.3. Compute Frechet Distance between stats of the real and generated.
 
 ```
-python -m frechet_audio_distance.compute_fad  --background_stats stats/[name]_[id_2]_stats 
-                                              --test_stats stats/[name]_[id_2]_[expname]_[epoch]_G[id_2]_S[id_1]_stats
+python -m frechet_audio_distance.compute_fad --background_stats stats/[name]_[id_2]_stats \
+                                             --test_stats stats/[name]_[id_2]_[expname]_[epoch]_G[id_2]_S[id_1]_stats
 ```
 
 - Background refers to the real training audio set.
 - Test refers to the fake style transferred audio set.
 
+---
+
 ## Pretrained Models
 
-*Coming Soon*
+With respect to the current data preperation set up, the following models were trained:
+
+|  Model  |                                      Flickr                                      |                                       URMP                                       |
+|:-------:|:--------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------:|
+| VAE-GAN | [link](https://drive.google.com/drive/folders/1Wui2Pt4sOBl71exRh49GX_JEBpFv_vNg) | [link](https://drive.google.com/drive/folders/1Nq3tKE-kcoMOw5AYEa0qWddxwbUYL8aA) |
+| WaveNet | [link](https://drive.google.com/drive/folders/1uK_mAfA24sXkru7hmBLJCtqRQIq43zNx) | [link](https://drive.google.com/drive/folders/1RZhP6UFiJjZBYL4JyIf4tOTa1RrX-l0a) |
+
+#### Pretrained VAE-GAN
+
+1. Create directory ```voice_conversion/src/saved_models/initial```.
+2. Drag .pth files to that directory.
+3. Call with ```--model_name initial --epoch 99``` for inference (with epoch 490 for URMP).
+
+Notes
+- G1 is female for Flickr, trumpet for URMP.
+- G2 is male for Flickr, violin for URMP.
+
+#### Pretrained WaveNet
+
+1. Create directory ```wavenet_vocoder/egs/gaussian/exp/```
+2. Drag the folder such as ```flickr_1_train_no_dev_flickr``` into that directory.
+3. Call ./infer.sh with appropriate arguments such as ```spk="flickr_1" inferdir="initial_99_G1_S2"```.
+
+Notes
+- flickr_1 is female, flickr_2 is male.
+- urmp_1 is trumpet, urmp_2 is violin.
+- inferdir is just a local directory in ```voice_conversion/src/out_infer/```. You can point it to any local dir within that path for input.
