@@ -234,7 +234,7 @@ Notes
 
 1. Create directory ```wavenet_vocoder/egs/gaussian/exp/```
 2. Drag the folder such as ```flickr_1_train_no_dev_flickr``` into that directory.
-3. Drag the meanvar.joblib file within the folder to a new directory following ```wavenet_vocoder/egs/gaussian/dump/[spk]/logmelspectrogram/org```**** - where ```[spk]``` corresponds to ```flickr_1``` for example.
+3. Drag the meanvar.joblib file within the folder to a new directory following ```wavenet_vocoder/egs/gaussian/dump/[spk]/logmelspectrogram/org``` - where ```[spk]``` corresponds to ```flickr_1``` for example.
 4. Call ./infer.sh with appropriate arguments such as ```spk="flickr_1" inferdir="initial_99_G1_S2"```.
 
 Notes
