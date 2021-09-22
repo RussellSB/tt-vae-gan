@@ -2,6 +2,17 @@
 
 This pipeline follows and extends the work of [Albadawy & Lyu 2020](https://ebadawy.github.io/post/speech_style_transfer/Albadawy_et_al-2020-INTERSPEECH.pdf). The work I used this for shows (amongst other things) that their proposed **voice** conversion model is also applicable to context of musical instruments, therefore reforming the conversion to a more generalised audio style - **timbre**.
 
+You can find the pre-print of my work [here](https://arxiv.org/abs/2109.02096). Please be sure to reference it if you use this code for your research:
+
+@misc{sammutbonnici2021timbre,
+      title={Timbre Transfer with Variational Auto Encoding and Cycle-Consistent Adversarial Networks}, 
+      author={Russell Sammut Bonnici and Charalampos Saitis and Martin Benning},
+      year={2021},
+      eprint={2109.02096},
+      archivePrefix={arXiv},
+      primaryClass={cs.SD}
+}
+
 ## Summary
 The implemented pipeline makes use of the following projects (click for orginating repos):
 1. [voice_conversion](https://github.com/ebadawy/voice_conversion) - Performs VAE-GAN style transfer in the time-frequency melspectrogram domain.
