@@ -45,7 +45,7 @@ The implemented pipeline makes use of the following projects (click for orginati
 Recommended GPU VRAM per model:
 - voice_conversion - **2 GB**
 - wavenet_vocoder - **8 GB**
-- fad - **24 GB** 
+- fad - **16 GB** 
 
 ### Note
 - If you train many-to-many (more than 2 timbres) you may need a stronger GPU for *voice_conversion*
