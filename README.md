@@ -1,6 +1,19 @@
 # Timbre Transfer with VAE-GAN & WaveNet
 
-This pipeline follows and extends the work of [Albadawy & Lyu 2020](https://ebadawy.github.io/post/speech_style_transfer/Albadawy_et_al-2020-INTERSPEECH.pdf). The work I used this for shows (amongst other things) that their proposed **voice** conversion model is also applicable to context of musical instruments, therefore reforming the conversion to a more generalised audio style - **timbre**.
+This pipeline follows and extends the work of [Albadawy & Lyu 2020](https://ebadawy.github.io/post/speech_style_transfer/Albadawy_et_al-2020-INTERSPEECH.pdf). The work that used this shows (amongst other things) that their proposed **voice** conversion model is also applicable to context of musical instruments, therefore reforming the conversion to a more generalised audio style - **timbre**. 
+
+You can find the pre-print of this work [here](https://arxiv.org/abs/2109.02096). Please be sure to reference it if you use this code for your research:
+
+```
+@misc{sammutbonnici2021timbre,
+      title={Timbre Transfer with Variational Auto Encoding and Cycle-Consistent Adversarial Networks}, 
+      author={Russell Sammut Bonnici and Charalampos Saitis and Martin Benning},
+      year={2021},
+      eprint={2109.02096},
+      archivePrefix={arXiv},
+      primaryClass={cs.SD}
+}
+```
 
 ## Summary
 The implemented pipeline makes use of the following projects (click for orginating repos):
@@ -16,21 +29,23 @@ The implemented pipeline makes use of the following projects (click for orginati
 
 ## Demo
 
- *(Audio coming soon)*
+**Female to Male:**
 
-Male to Female:
+- [Input](https://user-images.githubusercontent.com/35470600/131001275-b5dcd806-a2cf-451b-a61f-56ab453af66f.mp4) -> [Griffin Lim Output](https://user-images.githubusercontent.com/35470600/131001312-238a13d4-0d6b-451a-afbf-284979414daf.mp4) -> [WaveNet Output](https://user-images.githubusercontent.com/35470600/131001361-f285ae93-d1f6-4325-84c1-b3982dcc14dc.mp4)
 
-![m1_t_f1](https://user-images.githubusercontent.com/35470600/127534797-2b6d8f30-3072-49ee-921f-86a9f7174a2a.png)
+![G2_970641406_9a20ee636a_4](https://user-images.githubusercontent.com/35470600/131000264-2527a5dc-95b2-408a-beeb-8fc662db6590.png)
 
-Violin to Trumpet: 
+**Violin to Trumpet:**
 
-![vn_t_tpt](https://user-images.githubusercontent.com/35470600/127534790-75bfed70-64be-497d-9d87-7ec26e59ea7f.png)
+- [Input](https://drive.google.com/file/d/1idIHs7MOv2NpMy6agDlc9alWTlRq2f-c/view?usp=sharing) -> [Griffin Lim Output](https://drive.google.com/file/d/1r4ArPQuwtwMJA41aCji_iy_3kvOkGcCy/view?usp=sharing) -> [WaveNet Output](https://drive.google.com/file/d/13u8bUUbIGG7Z8hupQNbYX1VYRH1HmTp1/view?usp=sharing)
+
+![G1_AuSep_2_vn_32_Fugue](https://user-images.githubusercontent.com/35470600/131002898-d1234b06-9aa6-4adc-9268-6de0200cc9bf.png)
 
 ## Hardware
 Recommended GPU VRAM per model:
 - voice_conversion - **2 GB**
 - wavenet_vocoder - **8 GB**
-- fad - **24 GB** 
+- fad - **16 GB** 
 
 ### Note
 - If you train many-to-many (more than 2 timbres) you may need a stronger GPU for *voice_conversion*
@@ -141,8 +156,9 @@ cd ../wavenet_vocoder/egs/gaussian
 spk="[name]_[id]" ./run.sh --stage 1 --stop-stage 1
 ```
 
-- For two speakers ids this would be either ```1``` or ```2```.
-- You need to run the .sh command for each target timbre.
+- For two speakers ids this would be either ```1``` or ```2```. If you want to train all, make [id] as "_all" or something
+- You need to run the .sh command for each target timbre if you want to train specific vocoders.
+- Note that alternate to specific vocoders train general vocoders (a vocoder for all speakers instead of for each speaker). For this prepare training and test data in the previous step from all speakers in one dataset.
 
 #### 2.3. Train a wavenet vocoder.
 
@@ -150,7 +166,7 @@ spk="[name]_[id]" ./run.sh --stage 1 --stop-stage 1
 spk="[name]_[id]" hparams=conf/[name].json ./run.sh --stage 2 --stop-stage 2 
 ```
 
-- Just like preprocessing, you need to run this for each target timbre.
+- Just like preprocessing, you need to run this for each target timbre for specific vocoding.
 - You can add ```CUDA_VISIBLE_DEVICES="0,1"``` before ```./run.sh``` if you have two GPUs (training takes quite long).
 
 #### 2.4. Infer style transferred reconstructions to improve their perceptual quality.
@@ -210,7 +226,7 @@ python -m frechet_audio_distance.compute_fad --background_stats stats/[name]_[id
 
 ## Pretrained Models
 
-With respect to the current data preperation set up, the following models were trained:
+With respect to the current data preperation set up, the following one-to-one VAE-GANs and specific vocoders were trained:
 
 |  Model  |                                      Flickr                                      |                                       URMP                                       |
 |:-------:|:--------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------:|
@@ -221,7 +237,7 @@ With respect to the current data preperation set up, the following models were t
 
 1. Create directory ```voice_conversion/src/saved_models/initial```.
 2. Drag .pth files to that directory.
-3. Call with ```--model_name initial --epoch 99``` for inference (with epoch 490 for URMP).
+4. Call with ```--model_name initial --epoch 99``` for inference (with epoch 490 for URMP).
 
 Notes
 - G1 is female for Flickr, trumpet for URMP.
@@ -231,7 +247,8 @@ Notes
 
 1. Create directory ```wavenet_vocoder/egs/gaussian/exp/```
 2. Drag the folder such as ```flickr_1_train_no_dev_flickr``` into that directory.
-3. Call ./infer.sh with appropriate arguments such as ```spk="flickr_1" inferdir="initial_99_G1_S2"```.
+3. Drag the meanvar.joblib file within the folder to a new directory following ```wavenet_vocoder/egs/gaussian/dump/[spk]/logmelspectrogram/org``` - where ```[spk]``` corresponds to ```flickr_1``` for example.
+4. Call ./infer.sh with appropriate arguments such as ```spk="flickr_1" inferdir="initial_99_G1_S2"```.
 
 Notes
 - flickr_1 is female, flickr_2 is male.
