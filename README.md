@@ -121,11 +121,12 @@ python preprocess.py --dataset ../data/data_[name]
 #### 1.3. Train on your data.
 
 ```
-python train.py --model_name [expname] --dataset ../data/data_[name]
+python train.py --model_name [expname] --dataset ../data/data_[name] --n_spkrs 2
 ```
 
 - Can set max epochs with ```--n_epochs [int]``` (100 default)
 - Can set how often to save models with ```--checkpoint_interval [int]``` (1 epoch by default)
+- Can adjust number of speakers to more than 2 for a many-to-many approach.
 
 #### 1.4. Infer with VAE-GAN and reconstruct raw audio with Griffin Lim.
 
