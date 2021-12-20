@@ -168,6 +168,7 @@ spk="[name]_[id]" hparams=conf/[name].json ./run.sh --stage 2 --stop-stage 2
 ```
 
 - Just like preprocessing, you need to run this for each target timbre for specific vocoding.
+- Note that by default this is set to look for and load a pretrained model (provided below). If you'd like to train wavenet with new weights from scratch please remove `line 78` in `run.sh`.
 - You can add ```CUDA_VISIBLE_DEVICES="0,1"``` before ```./run.sh``` if you have two GPUs (training takes quite long).
 
 #### 2.4. Infer style transferred reconstructions to improve their perceptual quality.
