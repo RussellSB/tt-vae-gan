@@ -1,17 +1,18 @@
 # Timbre Transfer with VAE-GAN & WaveNet
 
-This pipeline follows and extends the work of [Albadawy & Lyu 2020](https://ebadawy.github.io/post/speech_style_transfer/Albadawy_et_al-2020-INTERSPEECH.pdf). The work that used this shows (amongst other things) that their proposed **voice** conversion model is also applicable to context of musical instruments, therefore reforming the conversion to a more generalised audio style - **timbre**. 
+This pipeline follows and extends the work of [Albadawy & Lyu 2020](https://ebadawy.github.io/post/speech_style_transfer/Albadawy_et_al-2020-INTERSPEECH.pdf). The work that used this demonstrates (amongst other things) that their proposed **voice** conversion model is also applicable to the context of musical instruments, thereby generalising the conversion to a broader audio style — **timbre**.
 
-You can find the pre-print of this work [here](https://arxiv.org/abs/2109.02096). Please be sure to reference it if you use this code for your research:
+This work was published at **IJCNN 2022** (IEEE). You can find the paper on [IEEE Xplore](https://doi.org/10.1109/IJCNN55064.2022.9892107) and a pre-print on [arXiv](https://arxiv.org/abs/2109.02096). Please cite it if you use this code in your research:
 
 ```
-@misc{sammutbonnici2021timbre,
-      title={Timbre Transfer with Variational Auto Encoding and Cycle-Consistent Adversarial Networks}, 
-      author={Russell Sammut Bonnici and Charalampos Saitis and Martin Benning},
-      year={2021},
-      eprint={2109.02096},
-      archivePrefix={arXiv},
-      primaryClass={cs.SD}
+@inproceedings{BonniciBS22,
+  author    = {Russell Sammut Bonnici and Charalampos Saitis and Martin Benning},
+  title     = {Timbre Transfer with Variational Auto Encoding and Cycle-Consistent Adversarial Networks},
+  booktitle = {2022 International Joint Conference on Neural Networks (IJCNN)},
+  pages     = {1--8},
+  year      = {2022},
+  publisher = {IEEE},
+  doi       = {10.1109/IJCNN55064.2022.9892107}
 }
 ```
 
